@@ -1,13 +1,28 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '../ui-components/button';
 import { Input } from '../ui-components/input';
 import { Label } from '../ui-components/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui-components/select';
 import { Textarea } from '../ui-components/textArea';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui-components/Card';
-import { Plus, Wallet } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui-components/card';
+import { Plus, Wallet, Trash2 } from 'lucide-react';
 
-export function IncomePage() {
+interface Income {
+  id: string;
+  amount: number;
+  source: string;
+  frequency: string;
+  description: string;
+  date: string;
+}
+
+interface IncomePageProps {
+  incomes: Income[];
+  onAddIncome: (income: Income) => void;
+  onDeleteIncome: (id: string) => void;
+}
+
+export default function IncomePage({ incomes, onAddIncome, onDeleteIncome }: IncomePageProps) {
   const [amount, setAmount] = useState('');
   const [source, setSource] = useState('');
   const [description, setDescription] = useState('');
@@ -16,9 +31,17 @@ export function IncomePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock income addition
-    console.log('Adding income:', { amount, source, description, date, frequency });
-    // Reset form
+    if (!amount || !source || !date) return;
+
+    const newIncome: Income = {
+      id: Date.now().toString(),
+      amount: parseFloat(amount),
+      source,
+      description,
+      date,
+      frequency
+    };
+    onAddIncome(newIncome);
     setAmount('');
     setSource('');
     setDescription('');
@@ -32,7 +55,7 @@ export function IncomePage() {
         <div className="p-2 rounded-lg bg-green-100">
           <Wallet className="h-6 w-6 text-green-600" />
         </div>
-        <h1 className="text-green-700">Add Income</h1>
+        <h1 className="text-3xl font-bold text-green-700">Add Income</h1>
       </div>
 
       <Card className="border-green-200 shadow-sm">
@@ -68,26 +91,25 @@ export function IncomePage() {
                 />
               </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="source">Income Source</Label>
                 <Select value={source} onValueChange={setSource} required>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select income source" />
+                    <SelectValue placeholder="Select source" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="salary">Salary</SelectItem>
-                    <SelectItem value="freelance">Freelance</SelectItem>
-                    <SelectItem value="business">Business Income</SelectItem>
-                    <SelectItem value="investment">Investment Returns</SelectItem>
-                    <SelectItem value="rental">Rental Income</SelectItem>
-                    <SelectItem value="bonus">Bonus</SelectItem>
-                    <SelectItem value="commission">Commission</SelectItem>
-                    <SelectItem value="pension">Pension</SelectItem>
-                    <SelectItem value="dividend">Dividends</SelectItem>
-                    <SelectItem value="gift">Gift/Inheritance</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="Salary">Salary</SelectItem>
+                    <SelectItem value="Freelance">Freelance</SelectItem>
+                    <SelectItem value="Business">Business Income</SelectItem>
+                    <SelectItem value="Investment">Investment Returns</SelectItem>
+                    <SelectItem value="Rental">Rental Income</SelectItem>
+                    <SelectItem value="Bonus">Bonus</SelectItem>
+                    <SelectItem value="Commission">Commission</SelectItem>
+                    <SelectItem value="Pension">Pension</SelectItem>
+                    <SelectItem value="Dividend">Dividends</SelectItem>
+                    <SelectItem value="Gift">Gift/Inheritance</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -98,64 +120,66 @@ export function IncomePage() {
                     <SelectValue placeholder="Select frequency" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="one-time">One-time</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="bi-weekly">Bi-weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="quarterly">Quarterly</SelectItem>
-                    <SelectItem value="annually">Annually</SelectItem>
+                    <SelectItem value="One-time">One-time</SelectItem>
+                    <SelectItem value="Weekly">Weekly</SelectItem>
+                    <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
+                    <SelectItem value="Monthly">Monthly</SelectItem>
+                    <SelectItem value="Quarterly">Quarterly</SelectItem>
+                    <SelectItem value="Annually">Annually</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Description (optional)</Label>
               <Textarea
                 id="description"
-                placeholder="Enter income description (optional)"
+                placeholder="Details about this income"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
               />
             </div>
-
-            <Button type="submit" className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+            >
               Add Income
             </Button>
           </form>
         </CardContent>
       </Card>
 
-      {/* Recent Income Preview */}
       <Card className="border-emerald-200">
         <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50">
-          <CardTitle className="text-emerald-700">Recent Income</CardTitle>
+          <CardTitle className="text-emerald-700">Recent Incomes</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center p-3 border border-green-100 rounded-lg bg-green-50/50">
-              <div>
-                <div className="text-gray-900">Monthly Salary</div>
-                <div className="text-sm text-green-600">Salary • Monthly • Today</div>
-              </div>
-              <div className="text-green-700 font-medium">+$4,500.00</div>
+          {incomes.length === 0 ? (
+            <p className="text-gray-500 text-center py-4">No income yet</p>
+          ) : (
+            <div className="space-y-2">
+              {incomes.slice(0, 10).map((income) => (
+                <div key={income.id} className="flex justify-between items-center p-3 border border-green-100 rounded-lg bg-green-50/50">
+                  <div className="flex-1">
+                    <div className="text-gray-900 font-medium">{income.description || income.source}</div>
+                    <div className="text-sm text-green-600">{income.source} • {new Date(income.date).toLocaleDateString()} {income.frequency && `• ${income.frequency}`}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-green-700 font-bold">+${income.amount.toFixed(2)}</div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDeleteIncome(income.id)}
+                      className="text-green-600 hover:bg-green-100"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="flex justify-between items-center p-3 border border-green-100 rounded-lg bg-green-50/50">
-              <div>
-                <div className="text-gray-900">Freelance Project</div>
-                <div className="text-sm text-green-600">Freelance • One-time • 3 days ago</div>
-              </div>
-              <div className="text-green-700 font-medium">+$850.00</div>
-            </div>
-            <div className="flex justify-between items-center p-3 border border-green-100 rounded-lg bg-green-50/50">
-              <div>
-                <div className="text-gray-900">Stock Dividends</div>
-                <div className="text-sm text-green-600">Investment Returns • Quarterly • 1 week ago</div>
-              </div>
-              <div className="text-green-700 font-medium">+$125.50</div>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
