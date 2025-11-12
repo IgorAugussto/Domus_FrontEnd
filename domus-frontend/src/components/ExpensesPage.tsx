@@ -1,18 +1,21 @@
+// src/components/ExpensesPage.tsx
 import React, { useState } from 'react';
-import { Button } from '../ui-components/button';
-import { Input } from '../ui-components/input';
-import { Label } from '../ui-components/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui-components/select';
-import { Textarea } from '../ui-components/textArea';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui-components/card';
-import { Plus, DollarSign, Trash2 } from 'lucide-react';
+import {
+  Card, CardContent, CardHeader, CardTitle
+} from "../ui-components/card";
+import { Button } from "../ui-components/button";
+import { Input } from "../ui-components/input";
+import { Label } from "../ui-components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui-components/select";
+import { Textarea } from "../ui-components/textArea";
+import { DollarSign, Plus, Trash2 } from "lucide-react";
 
 interface Expense {
   id: string;
   amount: number;
   category: string;
-  description: string;
   date: string;
+  description: string;
 }
 
 interface ExpensesPageProps {
@@ -28,35 +31,43 @@ export default function ExpensesPage({ expenses, onAddExpense, onDeleteExpense }
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount || !category || !date) return;
+  e.preventDefault();
+  if (!amount || !category || !date) return;
 
-    const newExpense: Expense = {
-      id: Date.now().toString(),
-      amount: parseFloat(amount),
-      category,
-      description,
-      date
-    };
-    onAddExpense(newExpense);
-    setAmount('');
-    setCategory('');
-    setDescription('');
-    setDate(new Date().toISOString().split('T')[0]);
+  const newExpense: Expense = {
+    id: Date.now().toString(),
+    amount: parseFloat(amount),
+    category,
+    description,
+    date
   };
+  onAddExpense(newExpense);
+  setAmount('');
+  setCategory('');
+  setDescription('');
+  setDate(new Date().toISOString().split('T')[0]); // ← CORRIGIDO!
+};
 
   return (
     <div className="space-y-6">
+      {/* TÍTULO */}
       <div className="flex items-center gap-2">
-        <div className="p-2 rounded-lg bg-red-100">
-          <DollarSign className="h-6 w-6 text-red-600" />
+        <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--financial-danger-light)' }}>
+          <DollarSign className="h-6 w-6" style={{ color: 'var(--financial-danger)' }} />
         </div>
-        <h1 className="text-3xl font-bold text-red-700">Add Expense</h1>
+        <h1 className="text-3xl font-bold" style={{ color: 'var(--financial-danger)' }}>
+          Add Expense
+        </h1>
       </div>
 
-      <Card className="border-red-200 shadow-sm">
-        <CardHeader className="bg-gradient-to-r from-red-50 to-orange-50">
-          <CardTitle className="flex items-center gap-2 text-red-700">
+      {/* FORMULÁRIO */}
+      <Card style={{ 
+        background: 'var(--card)', 
+        borderColor: 'var(--financial-danger)',
+        color: 'var(--card-foreground)'
+      }}>
+        <CardHeader style={{ background: 'var(--financial-danger-light)' }}>
+          <CardTitle className="flex items-center gap-2" style={{ color: 'var(--financial-danger)' }}>
             <Plus className="h-5 w-5" />
             New Expense
           </CardTitle>
@@ -74,6 +85,7 @@ export default function ExpensesPage({ expenses, onAddExpense, onDeleteExpense }
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   required
+                  style={{ borderColor: 'var(--border)' }}
                 />
               </div>
               <div className="space-y-2">
@@ -84,13 +96,15 @@ export default function ExpensesPage({ expenses, onAddExpense, onDeleteExpense }
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
+                  style={{ borderColor: 'var(--border)' }}
                 />
               </div>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Select value={category} onValueChange={setCategory} required>
-                <SelectTrigger>
+                <SelectTrigger style={{ borderColor: 'var(--border)' }}>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -105,19 +119,26 @@ export default function ExpensesPage({ expenses, onAddExpense, onDeleteExpense }
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="description">Description (optional)</Label>
               <Textarea
                 id="description"
-                placeholder="What was this expense for?"
+                placeholder="Enter expense description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
+                style={{ borderColor: 'var(--border)' }}
               />
             </div>
+
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+              className="w-full"
+              style={{
+                background: 'var(--financial-danger)',
+                color: 'white'
+              }}
             >
               Add Expense
             </Button>
@@ -125,28 +146,44 @@ export default function ExpensesPage({ expenses, onAddExpense, onDeleteExpense }
         </CardContent>
       </Card>
 
-      <Card className="border-orange-200">
-        <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50">
-          <CardTitle className="text-orange-700">Recent Expenses</CardTitle>
+      {/* LISTA DE DESPESAS */}
+      <Card style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
+        <CardHeader>
+          <CardTitle style={{ color: 'var(--card-foreground)' }}>Recent Expenses</CardTitle>
         </CardHeader>
         <CardContent>
           {expenses.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No expenses yet</p>
+            <p className="text-center py-4" style={{ color: 'var(--muted-foreground)' }}>
+              No expenses yet
+            </p>
           ) : (
             <div className="space-y-2">
               {expenses.slice(0, 10).map((expense) => (
-                <div key={expense.id} className="flex justify-between items-center p-3 border border-red-100 rounded-lg bg-red-50/50">
+                <div 
+                  key={expense.id} 
+                  className="flex justify-between items-center p-3 rounded-lg"
+                  style={{ 
+                    backgroundColor: 'var(--card)', 
+                    border: `1px solid var(--financial-danger-light)`
+                  }}
+                >
                   <div className="flex-1">
-                    <div className="text-gray-900 font-medium">{expense.description || 'Expense'}</div>
-                    <div className="text-sm text-red-600">{expense.category} • {new Date(expense.date).toLocaleDateString()}</div>
+                    <div className="font-medium" style={{ color: 'var(--card-foreground)' }}>
+                      {expense.description || 'Expense'}
+                    </div>
+                    <div className="text-sm" style={{ color: 'var(--financial-danger)' }}>
+                      {expense.category} • {new Date(expense.date).toLocaleDateString()}
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="text-red-700 font-bold">-${expense.amount.toFixed(2)}</div>
+                    <div className="font-bold" style={{ color: 'var(--financial-danger)' }}>
+                      -${expense.amount.toFixed(2)}
+                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => onDeleteExpense(expense.id)}
-                      className="text-red-600 hover:bg-red-100"
+                      style={{ color: 'var(--financial-danger)' }}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

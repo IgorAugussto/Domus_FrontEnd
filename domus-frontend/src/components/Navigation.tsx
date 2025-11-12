@@ -35,81 +35,87 @@ export default function Navigation({ currentPage, onPageChange, onLogout }: Navi
         <div className="flex gap-2">
           {/* Botões de navegação */}
           <Button
-            variant={currentPage === 'dashboard' ? 'secondary' : 'ghost'}
-            onClick={() => onPageChange('dashboard')}
-            style={{
-              backgroundColor: currentPage === 'dashboard' ? 'white' : 'transparent',
-              color: currentPage === 'dashboard' ? '#2563eb' : 'white',
-            }}
-            className="flex items-center gap-2 hover:bg-white/20"
-          >
-            <BarChart3 className="h-4 w-4" />
-            Dashboard
-          </Button>
+              variant={currentPage === 'dashboard' ? 'navActive' : 'ghost'}
+              onClick={() => onPageChange('dashboard')}
+              className={`
+                flex items-center gap-2 transition-all 
+                $${currentPage === 'dashboard' ? '' : 'hover:bg-white/20'}
+              `}
+            >
+              <BarChart3 className="h-4 w-4" />
+              Dashboard
+            </Button>
 
           <Button
-            variant={currentPage === 'income' ? 'secondary' : 'ghost'}
-            onClick={() => onPageChange('income')}
-            style={{
-              backgroundColor: currentPage === 'income' ? 'white' : 'transparent',
-              color: currentPage === 'income' ? '#16a34a' : 'white',
-            }}
-            className="flex items-center gap-2 hover:bg-white/20"
-          >
-            <Wallet className="h-4 w-4" />
-            Income
-          </Button>
+              variant={currentPage === 'income' ? 'secondary' : 'ghost'}
+              onClick={() => onPageChange('income')}
+              className={`
+                flex items-center gap-2 rounded-lg transition-all
+                ${currentPage === 'income' 
+                  ? 'bg-white text-green-600 shadow-sm' 
+                  : 'text-white hover:bg-white/20'
+                }
+              `}
+            >
+              <Wallet className="h-4 w-4" />
+              Income
+            </Button>
 
-          <Button
-            variant={currentPage === 'expenses' ? 'secondary' : 'ghost'}
-            onClick={() => onPageChange('expenses')}
-            style={{
-              backgroundColor: currentPage === 'expenses' ? 'white' : 'transparent',
-              color: currentPage === 'expenses' ? '#dc2626' : 'white',
-            }}
-            className="flex items-center gap-2 hover:bg-white/20"
-          >
-            <DollarSign className="h-4 w-4" />
-            Expenses
-          </Button>
+            {/* === EXPENSES === */}
+            <Button
+              variant={currentPage === 'expenses' ? 'secondary' : 'ghost'}
+              onClick={() => onPageChange('expenses')}
+              className={`
+                flex items-center gap-2 rounded-lg transition-all
+                ${currentPage === 'expenses' 
+                  ? 'bg-white text-red-600 shadow-sm' 
+                  : 'text-white hover:bg-white/20'
+                }
+              `}
+            >
+              <DollarSign className="h-4 w-4" />
+              Expenses
+            </Button>
 
-          <Button
-            variant={currentPage === 'investments' ? 'secondary' : 'ghost'}
-            onClick={() => onPageChange('investments')}
-            style={{
-              backgroundColor: currentPage === 'investments' ? 'white' : 'transparent',
-              color: currentPage === 'investments' ? '#f59e0b' : 'white',
-            }}
-            className="flex items-center gap-2 hover:bg-white/20"
-          >
-            <TrendingUp className="h-4 w-4" />
-            Investments
-          </Button>
+            {/* === INVESTMENTS === */}
+            <Button
+              variant={currentPage === 'investments' ? 'secondary' : 'ghost'}
+              onClick={() => onPageChange('investments')}
+              className={`
+                flex items-center gap-2 rounded-lg transition-all
+                ${currentPage === 'investments' 
+                  ? 'bg-white text-amber-600 shadow-sm' 
+                  : 'text-white hover:bg-white/20'
+                }
+              `}
+            >
+              <TrendingUp className="h-4 w-4" />
+              Investments
+            </Button>
+          </div>
         </div>
-      </div>
 
       <div className="flex items-center gap-2">
-        {/* BOTÃO DE TEMA */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          style={{ color: 'white' }}
-          className="hover:bg-white/20"
-          title={theme === 'light' ? 'Tema escuro' : 'Tema claro'}
-        >
-          {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-        </Button>
+        {/* TEMA */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="text-white hover:bg-white/20 rounded-lg"
+            title={theme === 'light' ? 'Tema escuro' : 'Tema claro'}
+          >
+            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          </Button>
 
-        <Button 
-          variant="ghost" 
-          onClick={onLogout} 
-          style={{ color: 'white' }}
-          className="flex items-center gap-2 hover:bg-white/20"
-        >
-          <LogOut className="h-4 w-4" />
-          Logout
-        </Button>
+          {/* LOGOUT */}
+          <Button 
+            variant="ghost" 
+            onClick={onLogout}
+            className="flex items-center gap-2 text-white hover:bg-white/20 rounded-lg"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
       </div>
     </div>
   </nav>

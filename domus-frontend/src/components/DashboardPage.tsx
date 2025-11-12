@@ -1,9 +1,34 @@
-<<<<<<< HEAD
-import { Card, CardContent, CardHeader, CardTitle } from '../ui-components/card';
-import { DollarSign, TrendingUp, TrendingDown, Wallet, Target, AlertCircle } from 'lucide-react';
-import { PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { Expense, Income, Investment } from '../types';
+// src/components/DashboardPage.tsx
+import { Card, CardContent, CardHeader, CardTitle, } from "../ui-components/card";
+import { Progress } from "../ui-components/progress";
+import { PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { TrendingUp, TrendingDown, DollarSign, Wallet, Target, AlertCircle } from "lucide-react";
 
+interface Expense {
+  id: string;
+  amount: number;
+  category: string;
+  date: string;
+  description: string;
+}
+
+interface Income {
+  id: string;
+  amount: number;
+  source: string;
+  frequency: string;
+  date: string;
+  description: string;
+}
+
+interface Investment {
+  id: string;
+  amount: number;
+  type: string;
+  expectedReturn: number;
+  date: string;
+  description: string;
+}
 
 interface DashboardPageProps {
   expenses: Expense[];
@@ -11,215 +36,195 @@ interface DashboardPageProps {
   investments: Investment[];
 }
 
-export default function DashboardPage({ expenses, incomes, investments }: DashboardPageProps) {
+export function DashboardPage({ expenses, incomes, investments }: DashboardPageProps) {
+  // === CÁLCULOS REAIS (usando props) ===
   const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   const totalInvestments = investments.reduce((sum, i) => sum + i.amount, 0);
-  const investmentGains = totalInvestments * 0.057;
+  const investmentGains = totalInvestments * 0.057; // 5.7%
   const netWorth = totalIncome - totalExpenses + totalInvestments + investmentGains;
   const netIncome = totalIncome - totalExpenses;
   const savingsRate = totalIncome > 0 ? ((netIncome / totalIncome) * 100).toFixed(1) : '0';
 
+  // === DADOS MENSAL (fixo + real no último mês) ===
   const monthlyData = [
-    { month: 'Jan', income: 4500, expenses: 1200, investments: 1000 },
-    { month: 'Feb', income: 4500, expenses: 1100, investments: 1500 },
-    { month: 'Mar', income: 4800, expenses: 1300, investments: 800 },
-    { month: 'Apr', income: 4500, expenses: 1050, investments: 1200 },
-    { month: 'May', income: 5200, expenses: 1400, investments: 900 },
-    { month: 'Jun', income: totalIncome, expenses: totalExpenses, investments: totalInvestments }
+    { month: "Jan", income: 4500, expenses: 1200, investments: 1000 },
+    { month: "Feb", income: 4500, expenses: 1100, investments: 1500 },
+    { month: "Mar", income: 4800, expenses: 1300, investments: 800 },
+    { month: "Apr", income: 4500, expenses: 1050, investments: 1200 },
+    { month: "May", income: 5200, expenses: 1400, investments: 900 },
+    { month: "Jun", income: totalIncome, expenses: totalExpenses, investments: totalInvestments }
   ];
 
+  // === CATEGORIAS DE DESPESAS (gráfico de pizza) ===
   const categoryTotals: { [key: string]: number } = {};
   expenses.forEach(e => {
     categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount;
   });
 
-  const expenseCategories = Object.entries(categoryTotals).map(([name, value], i) => ({
-    name,
-    value,
-    color: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6'][i % 5]
-  }));
-=======
-import { Card, CardContent, CardHeader, CardTitle, } from "../ui-components/card";
-import { Progress } from "../ui-components/progress";
-import { PieChart, AreaChart, Cell, Area, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, } from "recharts";
-import { TrendingUp, TrendingDown, DollarSign, Wallet, Target, AlertCircle, } from "lucide-react";
+  const expenseCategories = Object.entries(categoryTotals).map(([name, value], i) => {
+    const colors = [
+      'var(--financial-danger)',
+      'var(--financial-investment)',
+      'var(--financial-trust)',
+      'var(--financial-success)',
+      'var(--financial-neutral)'
+    ];
+    return { name, value, color: colors[i % colors.length] };
+  });
 
-// Mock data - in real app this would come from your data store
-const mockData = {
-  totalIncome: 5475.5,
-  totalExpenses: 1157.8,
-  totalInvestments: 8500.0,
-  investmentGains: 485.75,
-  netWorth: 12803.45,
-};
+  // === PORTFÓLIO DE INVESTIMENTOS (gráfico de pizza) ===
+  const investmentTypes: { [key: string]: number } = {};
+  investments.forEach(i => {
+    investmentTypes[i.type] = (investmentTypes[i.type] || 0) + i.amount;
+  });
 
-const monthlyData = [
-  { month: "Jan", income: 4500, expenses: 1200, investments: 1000 },
-  { month: "Feb", income: 4500, expenses: 1100, investments: 1500 },
-  { month: "Mar", income: 4800, expenses: 1300, investments: 800 },
-  { month: "Apr", income: 4500, expenses: 1050, investments: 1200 },
-  { month: "May", income: 5200, expenses: 1400, investments: 900 },
-  { month: "Jun", income: 5475, expenses: 1158, investments: 2000 },
-];
-
-const expenseCategories = [
-  { name: "Food & Dining", value: 450, color: "#ef4444" },
-  { name: "Transportation", value: 320, color: "#f97316" },
-  { name: "Shopping", value: 250, color: "#eab308" },
-  { name: "Entertainment", value: 137, color: "#22c55e" },
-];
-
-const investmentPortfolio = [
-  { name: "Stocks", value: 45, color: "#3b82f6" },
-  { name: "Bonds", value: 25, color: "#8b5cf6" },
-  { name: "ETFs", value: 20, color: "#06b6d4" },
-  { name: "Crypto", value: 10, color: "#f59e0b" },
-];
-
-export function DashboardPage() {
-  const netIncome = mockData.totalIncome - mockData.totalExpenses;
-  const totalPortfolioValue =
-    mockData.totalInvestments + mockData.investmentGains;
-  const savingsRate = ((netIncome / mockData.totalIncome) * 100).toFixed(1);
->>>>>>> 241f1912b7d0144ab37801cec7c40959251e228b
+  const investmentPortfolio = Object.entries(investmentTypes).map(([name, value]) => {
+    const percentage = ((value / totalInvestments) * 100).toFixed(0);
+    const colors = ['#3b82f6', '#8b5cf6', '#06b6d4', '#f59e0b', '#10b981'];
+    return { name, value: parseInt(percentage), color: colors[Object.keys(investmentTypes).indexOf(name) % colors.length] };
+  });
 
   return (
     <div className="space-y-6">
+      {/* TÍTULO */}
       <div className="flex items-center gap-2">
-        <div className="p-2 rounded-lg bg-blue-100">
-          <Target className="h-6 w-6 text-blue-600" />
+        <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--financial-trust-light)' }}>
+          <Target className="h-6 w-6" style={{ color: 'var(--financial-trust)' }} />
         </div>
-        <h1 className="text-3xl font-bold text-blue-700">Financial Dashboard</h1>
+        <h1 className="text-3xl font-bold" style={{ color: 'var(--financial-trust)' }}>
+          Financial Dashboard
+        </h1>
       </div>
 
+      {/* 4 CARDS PRINCIPAIS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-green-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-green-50 to-emerald-50">
-            <CardTitle className="text-sm text-green-700">
+        {/* TOTAL INCOME */}
+        <Card style={{
+          background: `linear-gradient(to bottom, var(--financial-success-light), var(--card))`,
+          borderColor: 'var(--financial-success)',
+          color: 'var(--card-foreground)'
+        }}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm" style={{ color: 'var(--financial-success)' }}>
               Total Income
             </CardTitle>
-            <Wallet className="h-4 w-4 text-green-600" />
+            <Wallet className="h-4 w-4" style={{ color: 'var(--financial-success)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700">
+            <div className="text-2xl font-bold" style={{ color: 'var(--financial-success)' }}>
               ${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-green-600 mt-1">
+            <p className="text-xs mt-1" style={{ color: 'var(--financial-success)' }}>
               <TrendingUp className="h-3 w-3 inline mr-1" />
               {incomes.length} entries
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-red-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-red-50 to-orange-50">
-            <CardTitle className="text-sm text-red-700">
+        {/* TOTAL EXPENSES */}
+        <Card style={{
+          background: `linear-gradient(to bottom, var(--financial-danger-light), var(--card))`,
+          borderColor: 'var(--financial-danger)',
+          color: 'var(--card-foreground)'
+        }}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm" style={{ color: 'var(--financial-danger)' }}>
               Total Expenses
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-red-600" />
+            <DollarSign className="h-4 w-4" style={{ color: 'var(--financial-danger)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-700">
+            <div className="text-2xl font-bold" style={{ color: 'var(--financial-danger)' }}>
               ${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-red-600 mt-1">
+            <p className="text-xs mt-1" style={{ color: 'var(--financial-danger)' }}>
               <TrendingDown className="h-3 w-3 inline mr-1" />
               {expenses.length} entries
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-amber-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-amber-50 to-yellow-50">
-            <CardTitle className="text-sm text-amber-700">
+        {/* PORTFOLIO VALUE */}
+        <Card style={{
+          background: `linear-gradient(to bottom, var(--financial-investment-light), var(--card))`,
+          borderColor: 'var(--financial-investment)',
+          color: 'var(--card-foreground)'
+        }}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm" style={{ color: 'var(--financial-investment)' }}>
               Portfolio Value
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-amber-600" />
+            <TrendingUp className="h-4 w-4" style={{ color: 'var(--financial-investment)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-700">
+            <div className="text-2xl font-bold" style={{ color: 'var(--financial-investment)' }}>
               ${(totalInvestments + investmentGains).toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-green-600 mt-1">
+            <p className="text-xs mt-1" style={{ color: 'var(--financial-success)' }}>
               <TrendingUp className="h-3 w-3 inline mr-1" />
               +5.7% returns
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-blue-50 to-indigo-50">
-            <CardTitle className="text-sm text-blue-700">Net Worth</CardTitle>
-            <Target className="h-4 w-4 text-blue-600" />
+        {/* NET WORTH */}
+        <Card style={{
+          background: `linear-gradient(to bottom, var(--financial-trust-light), var(--card))`,
+          borderColor: 'var(--financial-trust)',
+          color: 'var(--card-foreground)'
+        }}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm" style={{ color: 'var(--financial-trust)' }}>
+              Net Worth
+            </CardTitle>
+            <Target className="h-4 w-4" style={{ color: 'var(--financial-trust)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-700">
+            <div className="text-2xl font-bold" style={{ color: 'var(--financial-trust)' }}>
               ${netWorth.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-blue-600 mt-1">
+            <p className="text-xs mt-1" style={{ color: 'var(--financial-trust)' }}>
               Savings Rate: {savingsRate}%
             </p>
           </CardContent>
         </Card>
       </div>
 
+      {/* GRÁFICOS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        {/* TRENDS */}
+        <Card style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
           <CardHeader>
-            <CardTitle className="text-gray-700">
-              Monthly Financial Trends
-            </CardTitle>
+            <CardTitle style={{ color: 'var(--card-foreground)' }}>Monthly Financial Trends</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Area
-                  type="monotone"
-                  dataKey="income"
-                  stackId="1"
-                  stroke="#22c55e"
-                  fill="#22c55e"
-                  fillOpacity={0.6}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="expenses"
-                  stackId="2"
-                  stroke="#ef4444"
-                  fill="#ef4444"
-                  fillOpacity={0.6}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="investments"
-                  stackId="3"
-                  stroke="#f59e0b"
-                  fill="#f59e0b"
-                  fillOpacity={0.6}
-                />
+                <CartesianGrid stroke="var(--border)" />
+                <XAxis dataKey="month" stroke="var(--muted-foreground)" />
+                <YAxis stroke="var(--muted-foreground)" />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--card-foreground)' }} />
+                <Area type="monotone" dataKey="income" stackId="1" stroke="var(--chart-1)" fill="var(--chart-1)" fillOpacity={0.6} />
+                <Area type="monotone" dataKey="expenses" stackId="2" stroke="var(--chart-2)" fill="var(--chart-2)" fillOpacity={0.6} />
+                <Area type="monotone" dataKey="investments" stackId="3" stroke="var(--chart-3)" fill="var(--chart-3)" fillOpacity={0.6} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
+        {/* EXPENSE CATEGORIES */}
         {expenseCategories.length > 0 && (
-          <Card>
+          <Card style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
             <CardHeader>
-              <CardTitle className="text-gray-700">Expense Categories</CardTitle>
+              <CardTitle style={{ color: 'var(--card-foreground)' }}>Expense Categories</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
                     data={expenseCategories}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
+                    cx="50%" cy="50%" outerRadius={80}
                     dataKey="value"
                     label={(entry) => `${entry.name}: $${entry.value.toFixed(2)}`}
                   >
@@ -227,7 +232,7 @@ export function DashboardPage() {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--card-foreground)' }} />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -235,118 +240,107 @@ export function DashboardPage() {
         )}
       </div>
 
-<<<<<<< HEAD
-=======
-      {/* Financial Health & Goals */}
+      {/* SAVINGS + PORTFOLIO */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Savings Goals */}
-        <Card>
+        <Card style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
           <CardHeader>
-            <CardTitle className="text-gray-700">Savings Goals</CardTitle>
+            <CardTitle style={{ color: 'var(--card-foreground)' }}>Savings Goals</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm">Emergency Fund</span>
-                <span className="text-sm">$8,000 / $10,000</span>
+              <div className="flex justify-between mb-2 text-sm" style={{ color: 'var(--card-foreground)' }}>
+                <span>Emergency Fund</span>
+                <span>$8,000 / $10,000</span>
               </div>
               <Progress value={80} className="h-2" />
             </div>
             <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm">Vacation Fund</span>
-                <span className="text-sm">$2,400 / $5,000</span>
+              <div className="flex justify-between mb-2 text-sm" style={{ color: 'var(--card-foreground)' }}>
+                <span>Vacation Fund</span>
+                <span>$2,400 / $5,000</span>
               </div>
               <Progress value={48} className="h-2" />
             </div>
             <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm">Investment Goal</span>
-                <span className="text-sm">$8,500 / $15,000</span>
+              <div className="flex justify-between mb-2 text-sm" style={{ color: 'var(--card-foreground)' }}>
+                <span>Investment Goal</span>
+                <span>${totalInvestments.toFixed(0)} / $15,000</span>
               </div>
-              <Progress value={57} className="h-2" />
+              <Progress value={(totalInvestments / 15000) * 100} className="h-2" />
             </div>
           </CardContent>
         </Card>
 
-        {/* Investment Portfolio */}
-        <Card>
+        <Card style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
           <CardHeader>
-            <CardTitle className="text-gray-700">
-              Investment Allocation
-            </CardTitle>
+            <CardTitle style={{ color: 'var(--card-foreground)' }}>Investment Allocation</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
                   data={investmentPortfolio}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={70}
-                  dataKey="value"
-                  labelLine={false}
-                  paddingAngle={3}
+                  cx="50%" cy="50%" innerRadius={40} outerRadius={70}
+                  dataKey="value" paddingAngle={3}
                   label={({ name, value }) => `${name}: ${value}%`}
                 >
                   {investmentPortfolio.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', color: 'var(--card-foreground)' }} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
 
-      {/* Financial Insights */}
->>>>>>> 241f1912b7d0144ab37801cec7c40959251e228b
-      <Card className="border-amber-200">
-        <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50">
-          <CardTitle className="text-amber-700 flex items-center gap-2">
+      {/* INSIGHTS */}
+      <Card style={{ 
+        background: 'var(--card)', 
+        borderColor: parseFloat(savingsRate) >= 20 ? 'var(--financial-success)' : 'var(--financial-danger)'
+      }}>
+        <CardHeader style={{
+          background: parseFloat(savingsRate) >= 20 
+            ? 'var(--financial-success-light)' 
+            : 'var(--financial-danger-light)'
+        }}>
+          <CardTitle className="flex items-center gap-2" style={{ color: 'var(--card-foreground)' }}>
             <AlertCircle className="h-5 w-5" />
             Financial Insights
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-<<<<<<< HEAD
           {parseFloat(savingsRate) >= 20 ? (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-800">
-                <strong>Great job!</strong> Your savings rate of {savingsRate}% is above the recommended 20%.
-              </p>
+            <div className="p-3 rounded-lg" style={{
+              backgroundColor: 'var(--financial-success-light)',
+              border: `1px solid var(--financial-success)`,
+              color: 'var(--financial-success)'
+            }}>
+              <p><strong>Great job!</strong> Your savings rate of {savingsRate}% is above the recommended 20%.</p>
             </div>
           ) : (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-amber-800">
-                <strong>Attention:</strong> Your savings rate is {savingsRate}%. Try to reach at least 20%.
-              </p>
+            <div className="p-3 rounded-lg" style={{
+              backgroundColor: 'var(--financial-danger-light)',
+              border: `1px solid var(--financial-danger)`,
+              color: 'var(--financial-danger)'
+            }}>
+              <p><strong>Attention:</strong> Your savings rate is {savingsRate}%. Try to reach at least 20%.</p>
             </div>
           )}
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800">
-              <strong>Investment Performance:</strong> Your portfolio has gained ${investmentGains.toFixed(2)} (+5.7%) this period.
-=======
-          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-green-800">
-              <strong>Great job!</strong> Your savings rate of {savingsRate}% is
-              above the recommended 20%.
-            </p>
+          <div className="p-3 rounded-lg" style={{
+            backgroundColor: 'var(--financial-trust-light)',
+            border: `1px solid var(--financial-trust)`,
+            color: 'var(--financial-trust)'
+          }}>
+            <p><strong>Investment Performance:</strong> Your portfolio has gained ${investmentGains.toFixed(2)} (+5.7%) this period.</p>
           </div>
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800">
-              <strong>Investment Performance:</strong> Your portfolio has gained
-              ${mockData.investmentGains.toLocaleString()} (+5.7%) this period.
-            </p>
-          </div>
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-amber-800">
-              <strong>Recommendation:</strong> Consider increasing your
-              emergency fund to reach the $10,000 goal.
->>>>>>> 241f1912b7d0144ab37801cec7c40959251e228b
-            </p>
+          <div className="p-3 rounded-lg" style={{
+            backgroundColor: 'var(--financial-neutral)',
+            border: `1px solid var(--border)`,
+            color: 'var(--card-foreground)'
+          }}>
+            <p><strong>Recommendation:</strong> Consider increasing your emergency fund to reach the $10,000 goal.</p>
           </div>
         </CardContent>
       </Card>

@@ -1,19 +1,22 @@
+// src/components/IncomePage.tsx
 import React, { useState } from 'react';
-import { Button } from '../ui-components/button';
-import { Input } from '../ui-components/input';
-import { Label } from '../ui-components/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui-components/select';
-import { Textarea } from '../ui-components/textArea';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui-components/card';
-import { Plus, Wallet, Trash2 } from 'lucide-react';
+import {
+  Card, CardContent, CardHeader, CardTitle
+} from "../ui-components/card";
+import { Button } from "../ui-components/button";
+import { Input } from "../ui-components/input";
+import { Label } from "../ui-components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui-components/select";
+import { Textarea } from "../ui-components/textArea";
+import { Wallet, Plus, Trash2 } from "lucide-react";
 
 interface Income {
   id: string;
   amount: number;
   source: string;
   frequency: string;
-  description: string;
   date: string;
+  description: string;
 }
 
 interface IncomePageProps {
@@ -25,9 +28,9 @@ interface IncomePageProps {
 export default function IncomePage({ incomes, onAddIncome, onDeleteIncome }: IncomePageProps) {
   const [amount, setAmount] = useState('');
   const [source, setSource] = useState('');
+  const [frequency, setFrequency] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [frequency, setFrequency] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,30 +40,38 @@ export default function IncomePage({ incomes, onAddIncome, onDeleteIncome }: Inc
       id: Date.now().toString(),
       amount: parseFloat(amount),
       source,
+      frequency: frequency || 'One-time',
       description,
-      date,
-      frequency
+      date
     };
     onAddIncome(newIncome);
     setAmount('');
     setSource('');
+    setFrequency('');
     setDescription('');
     setDate(new Date().toISOString().split('T')[0]);
-    setFrequency('');
   };
 
   return (
     <div className="space-y-6">
+      {/* TÍTULO */}
       <div className="flex items-center gap-2">
-        <div className="p-2 rounded-lg bg-green-100">
-          <Wallet className="h-6 w-6 text-green-600" />
+        <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--financial-success-light)' }}>
+          <Wallet className="h-6 w-6" style={{ color: 'var(--financial-success)' }} />
         </div>
-        <h1 className="text-3xl font-bold text-green-700">Add Income</h1>
+        <h1 className="text-3xl font-bold" style={{ color: 'var(--financial-success)' }}>
+          Add Income
+        </h1>
       </div>
 
-      <Card className="border-green-200 shadow-sm">
-        <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
-          <CardTitle className="flex items-center gap-2 text-green-700">
+      {/* FORMULÁRIO */}
+      <Card style={{ 
+        background: 'var(--card)', 
+        borderColor: 'var(--financial-success)',
+        color: 'var(--card-foreground)'
+      }}>
+        <CardHeader style={{ background: 'var(--financial-success-light)' }}>
+          <CardTitle className="flex items-center gap-2" style={{ color: 'var(--financial-success)' }}>
             <Plus className="h-5 w-5" />
             New Income
           </CardTitle>
@@ -78,6 +89,7 @@ export default function IncomePage({ incomes, onAddIncome, onDeleteIncome }: Inc
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   required
+                  style={{ borderColor: 'var(--border)' }}
                 />
               </div>
               <div className="space-y-2">
@@ -88,14 +100,16 @@ export default function IncomePage({ incomes, onAddIncome, onDeleteIncome }: Inc
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
+                  style={{ borderColor: 'var(--border)' }}
                 />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="source">Income Source</Label>
                 <Select value={source} onValueChange={setSource} required>
-                  <SelectTrigger>
+                  <SelectTrigger style={{ borderColor: 'var(--border)' }}>
                     <SelectValue placeholder="Select source" />
                   </SelectTrigger>
                   <SelectContent>
@@ -105,10 +119,6 @@ export default function IncomePage({ incomes, onAddIncome, onDeleteIncome }: Inc
                     <SelectItem value="Investment">Investment Returns</SelectItem>
                     <SelectItem value="Rental">Rental Income</SelectItem>
                     <SelectItem value="Bonus">Bonus</SelectItem>
-                    <SelectItem value="Commission">Commission</SelectItem>
-                    <SelectItem value="Pension">Pension</SelectItem>
-                    <SelectItem value="Dividend">Dividends</SelectItem>
-                    <SelectItem value="Gift">Gift/Inheritance</SelectItem>
                     <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
@@ -116,33 +126,38 @@ export default function IncomePage({ incomes, onAddIncome, onDeleteIncome }: Inc
               <div className="space-y-2">
                 <Label htmlFor="frequency">Frequency</Label>
                 <Select value={frequency} onValueChange={setFrequency}>
-                  <SelectTrigger>
+                  <SelectTrigger style={{ borderColor: 'var(--border)' }}>
                     <SelectValue placeholder="Select frequency" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="One-time">One-time</SelectItem>
                     <SelectItem value="Weekly">Weekly</SelectItem>
-                    <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
                     <SelectItem value="Monthly">Monthly</SelectItem>
-                    <SelectItem value="Quarterly">Quarterly</SelectItem>
                     <SelectItem value="Annually">Annually</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="description">Description (optional)</Label>
               <Textarea
                 id="description"
-                placeholder="Details about this income"
+                placeholder="Enter income description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
+                style={{ borderColor: 'var(--border)' }}
               />
             </div>
+
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+              className="w-full"
+              style={{
+                background: 'var(--financial-success)',
+                color: 'white'
+              }}
             >
               Add Income
             </Button>
@@ -150,28 +165,44 @@ export default function IncomePage({ incomes, onAddIncome, onDeleteIncome }: Inc
         </CardContent>
       </Card>
 
-      <Card className="border-emerald-200">
-        <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50">
-          <CardTitle className="text-emerald-700">Recent Incomes</CardTitle>
+      {/* LISTA DE RECEITAS */}
+      <Card style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
+        <CardHeader>
+          <CardTitle style={{ color: 'var(--card-foreground)' }}>Recent Incomes</CardTitle>
         </CardHeader>
         <CardContent>
           {incomes.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No income yet</p>
+            <p className="text-center py-4" style={{ color: 'var(--muted-foreground)' }}>
+              No income yet
+            </p>
           ) : (
             <div className="space-y-2">
               {incomes.slice(0, 10).map((income) => (
-                <div key={income.id} className="flex justify-between items-center p-3 border border-green-100 rounded-lg bg-green-50/50">
+                <div 
+                  key={income.id} 
+                  className="flex justify-between items-center p-3 rounded-lg"
+                  style={{ 
+                    backgroundColor: 'var(--card)', 
+                    border: `1px solid var(--financial-success-light)`
+                  }}
+                >
                   <div className="flex-1">
-                    <div className="text-gray-900 font-medium">{income.description || income.source}</div>
-                    <div className="text-sm text-green-600">{income.source} • {new Date(income.date).toLocaleDateString()} {income.frequency && `• ${income.frequency}`}</div>
+                    <div className="font-medium" style={{ color: 'var(--card-foreground)' }}>
+                      {income.description || income.source}
+                    </div>
+                    <div className="text-sm" style={{ color: 'var(--financial-success)' }}>
+                      {income.source} • {income.frequency} • {new Date(income.date).toLocaleDateString()}
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="text-green-700 font-bold">+${income.amount.toFixed(2)}</div>
+                    <div className="font-bold" style={{ color: 'var(--financial-success)' }}>
+                      +${income.amount.toFixed(2)}
+                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => onDeleteIncome(income.id)}
-                      className="text-green-600 hover:bg-green-100"
+                      style={{ color: 'var(--financial-success)' }}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

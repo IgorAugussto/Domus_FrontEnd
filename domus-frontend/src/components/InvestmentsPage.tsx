@@ -1,3 +1,4 @@
+// src/components/InvestmentsPage.tsx
 import React, { useState } from 'react';
 import { Button } from '../ui-components/button';
 import { Input } from '../ui-components/input';
@@ -51,16 +52,24 @@ export default function InvestmentsPage({ investments, onAddInvestment, onDelete
 
   return (
     <div className="space-y-6">
+      {/* TÍTULO */}
       <div className="flex items-center gap-2">
-        <div className="p-2 rounded-lg bg-amber-100">
-          <TrendingUp className="h-6 w-6 text-amber-600" />
+        <div className="p-2 rounded-lg" style={{ backgroundColor: 'var(--financial-investment-light)' }}>
+          <TrendingUp className="h-6 w-6" style={{ color: 'var(--financial-investment)' }} />
         </div>
-        <h1 className="text-3xl font-bold text-amber-700">Add Investment</h1>
+        <h1 className="text-3xl font-bold" style={{ color: 'var(--financial-investment)' }}>
+          Add Investment
+        </h1>
       </div>
 
-      <Card className="border-amber-200 shadow-sm">
-        <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50">
-          <CardTitle className="flex items-center gap-2 text-amber-700">
+      {/* FORMULÁRIO */}
+      <Card style={{ 
+        background: 'var(--card)', 
+        borderColor: 'var(--financial-investment)',
+        color: 'var(--card-foreground)'
+      }}>
+        <CardHeader style={{ background: 'var(--financial-investment-light)' }}>
+          <CardTitle className="flex items-center gap-2" style={{ color: 'var(--financial-investment)' }}>
             <Plus className="h-5 w-5" />
             New Investment
           </CardTitle>
@@ -78,6 +87,7 @@ export default function InvestmentsPage({ investments, onAddInvestment, onDelete
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   required
+                  style={{ borderColor: 'var(--border)' }}
                 />
               </div>
               <div className="space-y-2">
@@ -88,14 +98,16 @@ export default function InvestmentsPage({ investments, onAddInvestment, onDelete
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
+                  style={{ borderColor: 'var(--border)' }}
                 />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="type">Investment Type</Label>
                 <Select value={type} onValueChange={setType} required>
-                  <SelectTrigger>
+                  <SelectTrigger style={{ borderColor: 'var(--border)' }}>
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -120,9 +132,11 @@ export default function InvestmentsPage({ investments, onAddInvestment, onDelete
                   value={expectedReturn}
                   onChange={(e) => setExpectedReturn(e.target.value)}
                   required
+                  style={{ borderColor: 'var(--border)' }}
                 />
               </div>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="description">Description (optional)</Label>
               <Textarea
@@ -131,11 +145,17 @@ export default function InvestmentsPage({ investments, onAddInvestment, onDelete
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
+                style={{ borderColor: 'var(--border)' }}
               />
             </div>
+
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+              className="w-full"
+              style={{
+                background: 'var(--financial-investment)',
+                color: 'white'
+              }}
             >
               Add Investment
             </Button>
@@ -143,28 +163,44 @@ export default function InvestmentsPage({ investments, onAddInvestment, onDelete
         </CardContent>
       </Card>
 
-      <Card className="border-yellow-200">
-        <CardHeader className="bg-gradient-to-r from-yellow-50 to-amber-50">
-          <CardTitle className="text-yellow-700">Recent Investments</CardTitle>
+      {/* LISTA DE INVESTIMENTOS */}
+      <Card style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
+        <CardHeader>
+          <CardTitle style={{ color: 'var(--card-foreground)' }}>Recent Investments</CardTitle>
         </CardHeader>
         <CardContent>
           {investments.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No investments yet</p>
+            <p className="text-center py-4" style={{ color: 'var(--muted-foreground)' }}>
+              No investments yet
+            </p>
           ) : (
             <div className="space-y-2">
               {investments.slice(0, 10).map((investment) => (
-                <div key={investment.id} className="flex justify-between items-center p-3 border border-amber-100 rounded-lg bg-amber-50/50">
+                <div 
+                  key={investment.id} 
+                  className="flex justify-between items-center p-3 rounded-lg"
+                  style={{ 
+                    backgroundColor: 'var(--card)', 
+                    border: `1px solid var(--financial-investment-light)`
+                  }}
+                >
                   <div className="flex-1">
-                    <div className="text-gray-900 font-medium">{investment.description || investment.type}</div>
-                    <div className="text-sm text-amber-600">{investment.type} • {new Date(investment.date).toLocaleDateString()} • {investment.expectedReturn}% return</div>
+                    <div className="font-medium" style={{ color: 'var(--card-foreground)' }}>
+                      {investment.description || investment.type}
+                    </div>
+                    <div className="text-sm" style={{ color: 'var(--financial-investment)' }}>
+                      {investment.type} • {new Date(investment.date).toLocaleDateString()} • {investment.expectedReturn}% return
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="text-amber-700 font-bold">${investment.amount.toFixed(2)}</div>
+                    <div className="font-bold" style={{ color: 'var(--financial-investment)' }}>
+                      ${investment.amount.toFixed(2)}
+                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => onDeleteInvestment(investment.id)}
-                      className="text-amber-600 hover:bg-amber-100"
+                      style={{ color: 'var(--financial-investment)' }}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
