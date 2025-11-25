@@ -18,6 +18,31 @@ const buttonVariants = cva(
         navActive: 'bg-white text-blue-600 shadow-sm hover:bg-white rounded-xl',
         ghost:"hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        
+        navButton: `
+          bg-white/10
+          text-white
+          font-medium
+          border-2 border-white/30
+          rounded-full
+          backdrop-blur-sm
+          hover:bg-white/20
+          hover:border-white/50
+          active:translate-y-0.5
+          active:shadow-inner
+          transition-all duration-200`,
+        navButtonActive: `
+          bg-white/25
+          text-white
+          font-bold
+          border-2 border-white/60
+          rounded-full
+          backdrop-blur-sm
+          shadow-lg
+          translate-y-0.5
+          shadow-inner
+          ring-4 ring-white/20
+          transition-all duration-200`,
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

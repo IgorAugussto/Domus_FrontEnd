@@ -35,27 +35,18 @@ export default function Navigation({ currentPage, onPageChange, onLogout }: Navi
         <div className="flex gap-2">
           {/* Botões de navegação */}
           <Button
-              variant={currentPage === 'dashboard' ? 'navActive' : 'ghost'}
+              variant={currentPage === 'dashboard' ? 'navButtonActive' : 'navButton'}
               onClick={() => onPageChange('dashboard')}
-              className={`
-                flex items-center gap-2 transition-all 
-                $${currentPage === 'dashboard' ? '' : 'hover:bg-white/20'}
-              `}
+              className={`flex items-center gap-2 transition-all`}
             >
               <BarChart3 className="h-4 w-4" />
               Dashboard
             </Button>
 
           <Button
-              variant={currentPage === 'income' ? 'secondary' : 'ghost'}
+              variant={currentPage === 'income' ? 'navButtonActive' : 'navButton'}
               onClick={() => onPageChange('income')}
-              className={`
-                flex items-center gap-2 rounded-lg transition-all
-                ${currentPage === 'income' 
-                  ? 'bg-white text-green-600 shadow-sm' 
-                  : 'text-white hover:bg-white/20'
-                }
-              `}
+              className={`flex items-center gap-2 transition-all`}
             >
               <Wallet className="h-4 w-4" />
               Income
@@ -63,15 +54,9 @@ export default function Navigation({ currentPage, onPageChange, onLogout }: Navi
 
             {/* === EXPENSES === */}
             <Button
-              variant={currentPage === 'expenses' ? 'secondary' : 'ghost'}
+              variant={currentPage === 'expenses' ? 'navButtonActive' : 'navButton'}
               onClick={() => onPageChange('expenses')}
-              className={`
-                flex items-center gap-2 rounded-lg transition-all
-                ${currentPage === 'expenses' 
-                  ? 'bg-white text-red-600 shadow-sm' 
-                  : 'text-white hover:bg-white/20'
-                }
-              `}
+              className={`flex items-center gap-2 transition-all`}
             >
               <DollarSign className="h-4 w-4" />
               Expenses
@@ -79,15 +64,9 @@ export default function Navigation({ currentPage, onPageChange, onLogout }: Navi
 
             {/* === INVESTMENTS === */}
             <Button
-              variant={currentPage === 'investments' ? 'secondary' : 'ghost'}
+              variant={currentPage === 'investments' ? 'navButtonActive' : 'navButton'}
               onClick={() => onPageChange('investments')}
-              className={`
-                flex items-center gap-2 rounded-lg transition-all
-                ${currentPage === 'investments' 
-                  ? 'bg-white text-amber-600 shadow-sm' 
-                  : 'text-white hover:bg-white/20'
-                }
-              `}
+              className={`flex items-center gap-2 transition-all`}
             >
               <TrendingUp className="h-4 w-4" />
               Investments
