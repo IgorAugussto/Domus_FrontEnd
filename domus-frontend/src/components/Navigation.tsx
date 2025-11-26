@@ -35,7 +35,7 @@ export default function Navigation({ currentPage, onPageChange, onLogout }: Navi
         <div className="flex gap-2">
           {/* Botões de navegação */}
           <Button
-              variant={currentPage === 'dashboard' ? 'navButtonActive' : 'navButton'}
+              variant={currentPage === 'dashboard' ? 'navActiveDashboard' : 'navButton'}
               onClick={() => onPageChange('dashboard')}
               className={`flex items-center gap-2 transition-all`}
             >
@@ -44,7 +44,7 @@ export default function Navigation({ currentPage, onPageChange, onLogout }: Navi
             </Button>
 
           <Button
-              variant={currentPage === 'income' ? 'navButtonActive' : 'navButton'}
+              variant={currentPage === 'income' ? 'navActiveIncome' : 'navButton'}
               onClick={() => onPageChange('income')}
               className={`flex items-center gap-2 transition-all`}
             >
@@ -54,7 +54,7 @@ export default function Navigation({ currentPage, onPageChange, onLogout }: Navi
 
             {/* === EXPENSES === */}
             <Button
-              variant={currentPage === 'expenses' ? 'navButtonActive' : 'navButton'}
+              variant={currentPage === 'expenses' ? 'navActiveExpenses' : 'navButton'}
               onClick={() => onPageChange('expenses')}
               className={`flex items-center gap-2 transition-all`}
             >
@@ -64,7 +64,7 @@ export default function Navigation({ currentPage, onPageChange, onLogout }: Navi
 
             {/* === INVESTMENTS === */}
             <Button
-              variant={currentPage === 'investments' ? 'navButtonActive' : 'navButton'}
+              variant={currentPage === 'investments' ? 'navActiveInvestments' : 'navButton'}
               onClick={() => onPageChange('investments')}
               className={`flex items-center gap-2 transition-all`}
             >

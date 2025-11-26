@@ -10,10 +10,8 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline:
-          "border bg-background text-foreground hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+        destructive: "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+        outline: "border bg-background text-foreground hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
         secondary:"bg-secondary text-secondary-foreground hover:bg-secondary/80",
         navActive: 'bg-white text-blue-600 shadow-sm hover:bg-white rounded-xl',
         ghost:"hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
@@ -31,6 +29,7 @@ const buttonVariants = cva(
           active:translate-y-0.5
           active:shadow-inner
           transition-all duration-200`,
+
         navButtonActive: `
           bg-white/25
           text-white
@@ -43,6 +42,50 @@ const buttonVariants = cva(
           shadow-inner
           ring-4 ring-white/20
           transition-all duration-200`,
+
+        navActiveDashboard:`
+          bg-blue-500/20
+          border-blue-400/60 
+          text-white 
+          font-medium 
+          shadow-inner 
+          rounded-full 
+          backdrop-blur-sm 
+          translate-y-0.5 
+          ring-2 ring-blue-400/30`,
+        navActiveIncome: `
+          bg-green-500/20 
+          border-green-400/60 
+          text-white 
+          font-medium 
+          shadow-inner 
+          rounded-full 
+          backdrop-blur-sm 
+          translate-y-0.5 
+          ring-2 
+          ring-green-400/30`,
+        navActiveExpenses:`
+          bg-red-500/20 
+          border-red-400/60 
+          text-white 
+          font-medium 
+          shadow-inner 
+          rounded-full 
+          backdrop-blur-sm 
+          translate-y-0.5 
+          ring-2 
+          ring-red-400/30`,
+        navActiveInvestments:`
+          bg-amber-500/20 
+          border-amber-400/60 
+          text-white 
+          font-medium 
+          shadow-inner 
+          rounded-full 
+          backdrop-blur-sm 
+          translate-y-0.5 
+          ring-2 
+          ring-amber-400/30`,
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
