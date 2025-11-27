@@ -3,8 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle, } from "../ui-components/card
 import { Progress } from "../ui-components/progress";
 import { PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, TrendingDown, DollarSign, Wallet, Target, AlertCircle } from "lucide-react";
+import { costService } from "../service/costService";
+import { incomeService } from "../service/incomeService";
+import { useState, useEffect } from "react";
 
-interface Expense {
+interface Cost {
   id: string;
   amount: number;
   category: string;
@@ -21,25 +24,113 @@ interface Income {
   description: string;
 }
 
-interface Investment {
+/*interface Investment {
   id: string;
   amount: number;
   type: string;
   expectedReturn: number;
   date: string;
   description: string;
-}
+}*/
 
-interface DashboardPageProps {
+/*interface DashboardPageProps {
   expenses: Expense[];
   incomes: Income[];
   investments: Investment[];
-}
+}*/
 
-export function DashboardPage({ expenses, incomes, investments }: DashboardPageProps) {
+export function DashboardPage() {
+
+  // === ESTADOS (agora começam vazios) ===
+  const [costs, setCosts] = useState<Cost[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [loading, setLoading] = useState(true); // pra mostrar carregando se quiser
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+
+        // Busca tudo ao mesmo tempo (rápido!)
+        const [costData, incomeData, investmentData] = await Promise.all([
+          costService.getAll(),
+          incomeService.getAll(),
+          investmentService.getAll()
+        ]);
+
+        setCosts(costData);
+        setIncomes(incomeData);
+        setInvestments(investmentData);
+        // === AQUI É A MÁGICA: calcula o histórico mensal real ===
+      const monthlyMap = new Map<string, { income: number; expenses: number; investments: number }>();
+
+      // Função pra extrair "YYYY-MM" da data
+      const getMonthKey = (dateStr: string) => {
+        const date = new Date(dateStr);
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      };
+
+      // Acumula rendas por mês
+      incomeData.forEach(i => {
+        const key = getMonthKey(i.date);
+        const current = monthlyMap.get(key) || { income: 0, expenses: 0, investments: 0 };
+        current.income += i.amount;
+        monthlyMap.set(key, current);
+      });
+
+      // Acumula despesas por mês
+      expenseData.forEach(e => {
+        const key = getMonthKey(e.date);
+        const current = monthlyMap.get(key) || { income: 0, expenses: 0, investments: 0 };
+        current.expenses += e.amount;
+        monthlyMap.set(key, current);
+      });
+
+      // Acumula investimentos por mês
+      investmentData.forEach(inv => {
+        const key = getMonthKey(inv.date);
+        const current = monthlyMap.get(key) || { income: 0, expenses: 0, investments: 0 };
+        current.investments += inv.amount;
+        monthlyMap.set(key, current);
+      });
+
+      // Transforma em array e ordena do mais antigo pro mais novo
+      const sortedData = Array.from(monthlyMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b)) // ordena por data
+        .map(([key, value]) => {
+          const [year, month] = key.split('-');
+          const monthName = new Date(parseInt(year), parseInt(month) - 1).toLocaleString('en-US', { month: 'short' });
+          return {
+            month: monthName,
+            income: Math.round(value.income * 100) / 100,
+            expenses: Math.round(value.expenses * 100) / 100,
+            investments: Math.round(value.investments * 100) / 100,
+          };
+        });
+
+      setMonthlyData(sortedData);
+
+    } catch (err) {
+      console.error("Erro ao carregar dados:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+    loadDashboardData();
+  }, []);
+
+  // === SE AINDA TÁ CARREGANDO (opcional) ===
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-2xl">Carregando seu dashboard financeiro...</p>
+      </div>
+    );
+  }
   // === CÁLCULOS REAIS (usando props) ===
   const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
-  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const totalExpenses = costs.reduce((sum, e) => sum + e.amount, 0);
   const totalInvestments = investments.reduce((sum, i) => sum + i.amount, 0);
   const investmentGains = totalInvestments * 0.057; // 5.7%
   const netWorth = totalIncome - totalExpenses + totalInvestments + investmentGains;

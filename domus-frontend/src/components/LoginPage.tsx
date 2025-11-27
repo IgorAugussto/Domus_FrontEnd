@@ -2,20 +2,32 @@ import React, { useState } from 'react';
 import { Button } from '../ui-components/button';
 import { Input } from '../ui-components/input';
 import { Label } from '../ui-components/label';
+import { authService } from '../service/authService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui-components/card';
 
-interface LoginPageProps {
+/*interface LoginPageProps {
   onLogin: () => void;
-}
+}*/
 
-export default function LoginPage({ onLogin }: LoginPageProps) {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  /*const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email && password) {
       onLogin();
+    }
+  };*/
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await authService.login({ email, password });
+      // redireciona para dashboard
+      window.location.href = '/dashboard';
+    } catch {
+      alert('Login falhou!');
     }
   };
 
@@ -31,7 +43,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
