@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { costService } from "../service/costService";
 import { incomeService } from "../service/incomeService";
+import { investmentService, type Investment } from "../service/investmentService";
 import { useState, useEffect } from "react";
 
 interface Cost {
@@ -66,6 +67,7 @@ export function DashboardPage() {
   // === ESTADOS (agora começam vazios) ===
   const [costs, setCosts] = useState<Cost[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
+  const [investments, setInvestments] = useState<Investment[]>([]);
   const [loading, setLoading] = useState(true); // pra mostrar carregando se quiser
 
   useEffect(() => {
