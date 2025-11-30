@@ -1,7 +1,7 @@
 import api from '../lib/api';
 
 export interface Cost {
-  id?: string;
+  id: string;
   description: string;
   amount: number;
   date: string;
