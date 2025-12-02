@@ -159,7 +159,11 @@ const savingsRate =
 // Categorias de despesas
 const categoryTotals: Record<string, number> = {};
 costs.forEach((c) => {
-  categoryTotals[c.category] = (categoryTotals[c.category] || 0) + c.amount;
+  if (!c.category) return; // <-- Impede undefined
+
+    categoryTotals[c.category] =
+    (categoryTotals[c.category] || 0) + c.amount;
+
 });
 
 const palette = [
@@ -171,17 +175,26 @@ const palette = [
 ];
 
 const expenseCategories = Object.entries(categoryTotals).map(
-  ([name, value], i) => ({
-    name,
-    value,
-    color: palette[i % palette.length], // ← CORRIGIDO (sempre seguro)
-  })
+  ([name, value], i) => {
+    const safeI = Number.isFinite(i) ? i : 0;
+
+    return {
+      name,
+      value,
+      color: palette[safeI % palette.length], // 100% seguro
+    };
+  }
 );
+
 
 // Portfolio de investimentos
 const investmentTypes: Record<string, number> = {};
 investments.forEach((i) => {
-  investmentTypes[i.type] = (investmentTypes[i.type] || 0) + i.amount;
+  if (!i.type) return; // <-- Impede undefined
+
+    investmentTypes[i.type] =
+    (investmentTypes[i.type] || 0) + i.amount;
+
 });
 
 const colors = ["#3b82f6", "#8b5cf6", "#06b6d4", "#f59e0b", "#10b981"];
