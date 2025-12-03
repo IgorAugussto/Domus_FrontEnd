@@ -13,11 +13,9 @@ interface RegisterRequest {
 
 interface AuthResponse {
   token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-  };
+  type: string;
+  email: string;
+  name: string;
 }
 
 export const authService = {
