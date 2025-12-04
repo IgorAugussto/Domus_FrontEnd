@@ -4,6 +4,7 @@ import { Input } from '../ui-components/input';
 import { Label } from '../ui-components/label';
 import { authService } from '../service/authService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui-components/card';
+import { useNavigate } from "react-router-dom";
 
 /*interface LoginPageProps {
   onLogin: () => void;
@@ -20,12 +21,14 @@ export default function LoginPage() {
     }
   };*/
 
+  const navigate = useNavigate();
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await authService.login({ email, password });
       // redireciona para dashboard
-      window.location.href = '/dashboard';
+      navigate('/dashboard');
     } catch {
       alert('Login falhou!');
     }

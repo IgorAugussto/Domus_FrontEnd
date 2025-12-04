@@ -1,22 +1,34 @@
-// src/context/AuthContext.tsx
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { authService } from '../services/authService';
+import { createContext, useState, type ReactNode } from 'react';
+import { authService } from '../service/authService';
+
+interface AuthUser {
+  token: string;
+  email: string;
+  name?: string;
+}
 
 interface AuthContextType {
-  user: any;
+  user: AuthUser | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   const login = async (email: string, password: string) => {
     const response = await authService.login({ email, password });
-    setUser(response); // salva nome, email, etc
+    localStorage.setItem("token", response.token)
+    const authUser: AuthUser = {
+      token: response.token,
+      email: response.email,
+      name: response.name,
+    };
+    setUser(authUser);
   };
 
   const logout = () => {
@@ -24,20 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const isAuthenticated = !!user || authService.isAuthenticated();
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      login,
-      logout,
-      isAuthenticated: !!user || authService.isAuthenticated()
-    }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );
 }
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth deve ser usado dentro de AuthProvider');
-  return context;
-};
