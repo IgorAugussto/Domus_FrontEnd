@@ -6,24 +6,9 @@ import { Label } from '../ui-components/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui-components/select';
 import { Textarea } from '../ui-components/textArea';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui-components/card';
-import { Plus, TrendingUp, Trash2 } from 'lucide-react';
+import { Plus, TrendingUp } from 'lucide-react';
 
-interface Investment {
-  id: string;
-  amount: number;
-  type: string;
-  expectedReturn: number;
-  description: string;
-  date: string;
-}
-
-interface InvestmentsPageProps {
-  investments: Investment[];
-  onAddInvestment: (investment: Investment) => void;
-  onDeleteInvestment: (id: string) => void;
-}
-
-export default function InvestmentsPage({ investments, onAddInvestment, onDeleteInvestment }: InvestmentsPageProps) {
+export default function InvestmentsPage() {
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('');
   const [expectedReturn, setExpectedReturn] = useState('');
@@ -32,17 +17,10 @@ export default function InvestmentsPage({ investments, onAddInvestment, onDelete
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Apenas impede o envio sem dados (por enquanto sem salvar nada)
     if (!amount || !type || !expectedReturn || !date) return;
 
-    const newInvestment: Investment = {
-      id: Date.now().toString(),
-      amount: parseFloat(amount),
-      type,
-      expectedReturn: parseFloat(expectedReturn),
-      description,
-      date
-    };
-    onAddInvestment(newInvestment);
+    // limpa o formulário (apenas visualmente)
     setAmount('');
     setType('');
     setExpectedReturn('');
@@ -169,46 +147,9 @@ export default function InvestmentsPage({ investments, onAddInvestment, onDelete
           <CardTitle style={{ color: 'var(--card-foreground)' }}>Recent Investments</CardTitle>
         </CardHeader>
         <CardContent>
-          {investments.length === 0 ? (
-            <p className="text-center py-4" style={{ color: 'var(--muted-foreground)' }}>
-              No investments yet
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {investments.slice(0, 10).map((investment) => (
-                <div 
-                  key={investment.id} 
-                  className="flex justify-between items-center p-3 rounded-lg"
-                  style={{ 
-                    backgroundColor: 'var(--card)', 
-                    border: `1px solid var(--financial-investment-light)`
-                  }}
-                >
-                  <div className="flex-1">
-                    <div className="font-medium" style={{ color: 'var(--card-foreground)' }}>
-                      {investment.description || investment.type}
-                    </div>
-                    <div className="text-sm" style={{ color: 'var(--financial-investment)' }}>
-                      {investment.type} • {new Date(investment.date).toLocaleDateString()} • {investment.expectedReturn}% return
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="font-bold" style={{ color: 'var(--financial-investment)' }}>
-                      ${investment.amount.toFixed(2)}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onDeleteInvestment(investment.id)}
-                      style={{ color: 'var(--financial-investment)' }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <p className="text-center py-4" style={{ color: 'var(--muted-foreground)' }}>
+            No investments yet
+          </p>
         </CardContent>
       </Card>
     </div>

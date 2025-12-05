@@ -1,4 +1,4 @@
-import { createContext, useState, type ReactNode } from 'react';
+import { createContext, useState, useEffect, type ReactNode } from 'react';
 import { authService } from '../service/authService';
 
 interface AuthUser {
@@ -20,6 +20,15 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token && !user) {
+      // você pode buscar dados do usuário, mas por agora vamos só restaurar
+      setUser({ token, email: "", name: "" });
+    }
+  }, []);
+
+
   const login = async (email: string, password: string) => {
     const response = await authService.login({ email, password });
     localStorage.setItem("token", response.token)
@@ -36,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
-  const isAuthenticated = !!user || authService.isAuthenticated();
+  const isAuthenticated = Boolean(user);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
