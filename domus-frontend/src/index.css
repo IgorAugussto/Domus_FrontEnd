@@ -15,6 +15,9 @@
   --financial-investment-light: #fffbeb; /* Fundo amarelo suave */
   --financial-trust: #3b82f6;        /* Azul confiável */
   --financial-trust-light: #dbeafe;  /* Fundo azul suave */
+  --financial-income: #10b981; /* Verde esmeralda */
+  --financial-income-light: #ecfdf5; /* Verde clarinho para fundo */
+
 
   /* FUNDO E CARD */
   --background: #f8fafc;             /* Cinza azulado claro */
@@ -35,6 +38,9 @@
   --financial-investment-light: #451a03; /* Fundo amarelo escuro */
   --financial-trust: #60a5fa;         /* Azul céu suave */
   --financial-trust-light: #172554;  /* Fundo azul escuro */
+  --financial-income: #34d399; /* Verde mais suave para dark mode */
+  --financial-income-light: #064e3b; /* Fundo verde escuro */
+
 
   /* FUNDO E CARD - ESCURO */
   --background: #0f172a;             /* Azul ardósia ESCURO (não preto!) */
