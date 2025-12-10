@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from '../ui-components/textArea';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui-components/card';
 import { Plus, Wallet } from 'lucide-react';
+import { incomeService } from "../service/incomeService";
 
 export default function IncomePage() {
   const [amount, setAmount] = useState('');
@@ -15,17 +16,40 @@ export default function IncomePage() {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount || !category || !source || !date) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    // apenas limpa o formulário (não salva ainda)
+  if (!amount || !category || !source || !date) {
+    alert("Preencha todos os campos!");
+    return;
+  }
+
+  try {
+    await incomeService.create({
+    description: description || `${source} - ${category}`,
+    amount: Number(amount),
+    date,
+    category,
+    source
+});
+
+
+    alert("Income salvo com sucesso!");
+
+    // Limpa o formulário
     setAmount('');
     setCategory('');
     setSource('');
     setDescription('');
     setDate(new Date().toISOString().split('T')[0]);
-  };
+
+  } catch (error) {
+    console.error("Erro ao salvar income:", error);
+    alert("Erro ao salvar renda. Tente novamente.");
+  }
+};
+
+
 
   return (
     <div className="space-y-6">
@@ -132,8 +156,7 @@ export default function IncomePage() {
             <Button 
               type="submit" 
               className="w-full"
-              style={{ background: 'var(--financial-income)', color: 'white' }}
-            >
+              style={{ background: 'var(--financial-income)', color: 'white' }}>
               Add Income
             </Button>
           </form>

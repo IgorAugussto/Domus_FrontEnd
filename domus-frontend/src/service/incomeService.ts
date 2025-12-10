@@ -1,3 +1,4 @@
+// src/service/incomeService.ts
 import api from '../lib/api';
 
 export interface Income {
@@ -5,21 +6,25 @@ export interface Income {
   description: string;
   amount: number;
   date: string;
+  category: string;
+  source: string;
 }
 
 export const incomeService = {
-  getAll: async (): Promise<Income[]> => {
-    const response = await api.get('/income');
-    return response.data;
+  create: async (data: any) => {
+    return api.post("/income", {
+      value: data.amount, // 👈 nome correto conforme backend (value)
+      description: data.description,
+      date: data.date,
+      category: data.category
+    });
   },
 
-  getTotal: async (): Promise<number> => {
-    const response = await api.get('/income/total');
-    return response.data; // ou response.data.total
+  getAll: async () => {
+    return api.get("/income");
   },
 
-  create: async (income: Omit<Income, 'id'>): Promise<Income> => {
-    const response = await api.post('/income', income);
-    return response.data;
+  getTotal: async () => {
+    return api.get("/income/total");
   }
 };
