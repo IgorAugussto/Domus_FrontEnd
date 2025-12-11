@@ -1,11 +1,10 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Button } from '../ui-components/button';
 import { Input } from '../ui-components/input';
 import { Label } from '../ui-components/label';
 import { authService } from '../service/authService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui-components/card';
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext"; 
 
 /*interface LoginPageProps {
   onLogin: () => void;
