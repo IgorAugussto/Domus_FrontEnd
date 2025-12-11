@@ -12,25 +12,23 @@ import { incomeService } from "../service/incomeService";
 export default function IncomePage() {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
-  const [source, setSource] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  if (!amount || !category || !source || !date) {
+  if (!amount || !category || !date) {
     alert("Preencha todos os campos!");
     return;
   }
 
   try {
     await incomeService.create({
-    description: description || `${source} - ${category}`,
+    description: description || `${category}`,
     amount: Number(amount),
     date,
     category,
-    source
 });
 
 
@@ -39,7 +37,6 @@ export default function IncomePage() {
     // Limpa o formulário
     setAmount('');
     setCategory('');
-    setSource('');
     setDescription('');
     setDate(new Date().toISOString().split('T')[0]);
 
@@ -126,18 +123,6 @@ export default function IncomePage() {
                     <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="source">Source</Label>
-                <Input
-                  id="source"
-                  placeholder="Company / Client / Bank"
-                  value={source}
-                  onChange={(e) => setSource(e.target.value)}
-                  required
-                  style={{ borderColor: 'var(--border)' }}
-                />
               </div>
             </div>
 

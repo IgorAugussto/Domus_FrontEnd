@@ -60,7 +60,7 @@ export function DashboardPage() {
         ]);
 
         setCosts(costData);
-        setIncomes(incomeData);
+        setIncomes(incomeData)
         setInvestments(investmentData);
 
         // Cálculo do histórico mensal 100% real
