@@ -15,7 +15,8 @@ export const incomeService = {
       value: data.amount,
       description: data.description,
       date: data.date,
-      category: data.category
+      category: data.category,
+      frequency: data.frequency
     });
   },
 

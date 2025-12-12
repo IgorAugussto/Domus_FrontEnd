@@ -55,6 +55,35 @@
   --chart-3: #fbbf24; /* investments */
 }
 
+/*SELECT FORM*/
+/* Wrapper do Select (botão que abre) */
+.select-trigger {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+/* Lista de opções */
+.select-content {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+}
+
+/* Cada item da lista */
+.select-item {
+  background-color: var(--card);
+  color: var(--card-foreground);
+}
+
+.select-item:hover {
+  background-color: var(--financial-income-light);
+  color: white;
+}
+
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
