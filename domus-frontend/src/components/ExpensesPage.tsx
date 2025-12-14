@@ -1,5 +1,5 @@
 // src/components/ExpensesPage.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -17,22 +17,60 @@ import {
   SelectValue,
 } from "../ui-components/select";
 import { Textarea } from "../ui-components/textArea";
-import { DollarSign, Plus, } from "lucide-react";
+import { DollarSign, Plus } from "lucide-react";
+import { costService } from "../service/costService";
 
 export default function ExpensesPage() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [costs, setCosts] = useState<any[]>([]);
+  const [frequency, setFrequency] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    loadCosts();
+  }, []);
+
+  const loadCosts = async () => {
+    try {
+      const data = await costService.getAll();
+      setCosts(data);
+    } catch (err) {
+      console.error("Erro ao carregar costs:", err);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || !category || !date) return;
 
-    setAmount("");
-    setCategory("");
-    setDescription("");
-    setDate(new Date().toISOString().split("T")[0]); // ← CORRIGIDO!
+    if (!amount || !category || !date) {
+      alert("Preencha todos os campos!");
+      return;
+    }
+
+    try {
+      await costService.create({
+        description: description || `${category}`,
+        amount: Number(amount),
+        date,
+        category,
+        frequency,
+      });
+
+      await loadCosts();
+
+      alert("Income salvo com sucesso!");
+
+      // Limpa o formulário
+      setAmount("");
+      setCategory("");
+      setDescription("");
+      setDate(new Date().toISOString().split("T")[0]);
+    } catch (error) {
+      console.error("Erro ao salvar income:", error);
+      alert("Erro ao salvar renda. Tente novamente.");
+    }
   };
 
   return (
@@ -102,25 +140,75 @@ export default function ExpensesPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select value={category} onValueChange={setCategory} required>
-                <SelectTrigger style={{ borderColor: "var(--border)" }}>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Food & Dining">Food & Dining</SelectItem>
-                  <SelectItem value="Transportation">Transportation</SelectItem>
-                  <SelectItem value="Shopping">Shopping</SelectItem>
-                  <SelectItem value="Entertainment">Entertainment</SelectItem>
-                  <SelectItem value="Bills & Utilities">
-                    Bills & Utilities
-                  </SelectItem>
-                  <SelectItem value="Healthcare">Healthcare</SelectItem>
-                  <SelectItem value="Education">Education</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select value={category} onValueChange={setCategory} required>
+                  <SelectTrigger
+                    className="select-trigger"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent className="select-content">
+                    <SelectItem className="select-item" value="Food & Dining">
+                      Food & Dining
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Transportation">
+                      Transportation
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Shopping">
+                      Shopping
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Entertainment">
+                      Entertainment
+                    </SelectItem>
+                    <SelectItem
+                      className="select-item"
+                      value="Bills & Utilities"
+                    >
+                      Bills & Utilities
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Healthcare">
+                      Healthcare
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Education">
+                      Education
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Other">
+                      Other
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="frequency">Frequency</Label>
+                <Select value={frequency} onValueChange={setFrequency}>
+                  <SelectTrigger className="select-trigger">
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent className="select-content">
+                    <SelectItem className="select-item" value="One-time">
+                      One-time
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Weekly">
+                      Weekly
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Bi-weekly">
+                      Bi-weekly
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Monthly">
+                      Monthly
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Quarterly">
+                      Quarterly
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Annually">
+                      Annually
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -157,9 +245,37 @@ export default function ExpensesPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-center py-4" style={{ color: "var(--muted-foreground)" }}>
-            No expenses data right now.
-          </p>
+          {costs.length === 0 ? (
+            <p
+              className="text-center py-4"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              No income added yet
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {costs.map((inc: any) => (
+                <li
+                  key={inc.id}
+                  className="p-3 rounded-lg border"
+                  style={{
+                    borderColor: "var(--border)",
+                    background: "var(--card)",
+                  }}
+                >
+                  <div className="flex justify-between">
+                    <span>
+                      {inc.description} - {inc.frequency}
+                    </span>
+                    <strong style={{ color: "var(--financial-income)" }}>
+                      ${inc.value}
+                    </strong>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{inc.date}</p>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </div>

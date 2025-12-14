@@ -9,18 +9,23 @@ export interface Cost {
 }
 
 export const costService = {
-  getAll: async (): Promise<Cost[]> => {
-    const response = await api.get('/costs');
-    return response.data;
+  create: async (data: any) => {
+    return api.post("/costs", {
+      value: data.amount,
+      description: data.description,
+      date: data.date,
+      category: data.category,
+      frequency: data.frequency
+    });
   },
 
-  getTotal: async (): Promise<number> => {
-    const response = await api.get('/costs/total');
-    return response.data;
+  getAll: async () => {
+    const response = await api.get("/costs");
+    return response.data; // 👈 AQUI ESTAVA O ERRO DO DASHBOARD
   },
 
-  create: async (cost: Omit<Cost, 'id'>): Promise<Cost> => {
-    const response = await api.post('/costs', cost);
+  getTotal: async () => {
+    const response = await api.get("/costs/total");
     return response.data;
   }
 };
