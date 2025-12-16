@@ -3,7 +3,7 @@ import api from '../lib/api';
 export interface Cost {
   id: string;
   description: string;
-  amount: number;
+  value: number;
   date: string;
   category?: string;
 }

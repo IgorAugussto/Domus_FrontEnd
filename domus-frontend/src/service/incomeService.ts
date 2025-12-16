@@ -4,7 +4,7 @@ import api from '../lib/api';
 export interface Income {
   id?: string;
   description: string;
-  amount: number;
+  value: number;
   date: string;
   category: string;
 }

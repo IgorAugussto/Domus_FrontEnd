@@ -38,6 +38,10 @@ export function DashboardPage() {
   const [costs, setCosts] = useState<Cost[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
+  const [totalIncome, setTotalIncome] = useState<number>(0);
+  const [totalCost, setTotalCost] = useState<number>(0);
+  const [totalInvestments, setTotalInvestments] = useState<number>(0);
+
   const [monthlyData, setMonthlyData] = useState<
     Array<{
       month: string;
@@ -49,19 +53,34 @@ export function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        setLoading(true);
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
 
-        const [costData, incomeData, investmentData] = await Promise.all([
-          costService.getAll(),
-          incomeService.getAll(),
-          investmentService.getAll(),
-        ]);
+      const [
+        costData,
+        incomeData,
+        investmentData,
+        totalIncomeValue,
+        totalCostValue,
+        totalInvestmentValue,
+      ] = await Promise.all([
+        costService.getAll(),
+        incomeService.getAll(),
+        investmentService.getAll(),
+        incomeService.getTotal(),
+        costService.getTotal(),
+        investmentService.getTotal(),
+      ]);
 
-        setCosts(costData);
-        setIncomes(incomeData)
-        setInvestments(investmentData);
+      setCosts(costData);
+      setIncomes(incomeData);
+      setInvestments(investmentData);
+
+      setTotalIncome(totalIncomeValue);
+      setTotalCost(totalCostValue);
+      setTotalInvestments(totalInvestmentValue);
+
 
         // Cálculo do histórico mensal 100% real
         const monthlyMap = new Map<
@@ -84,7 +103,7 @@ export function DashboardPage() {
             expenses: 0,
             investments: 0,
           };
-          current.income += i.amount;
+          current.income += Number(i.value);
           monthlyMap.set(key, current);
         });
 
@@ -95,7 +114,7 @@ export function DashboardPage() {
             expenses: 0,
             investments: 0,
           };
-          current.expenses += c.amount;
+          current.expenses += Number(c.value);
           monthlyMap.set(key, current);
         });
 
@@ -147,13 +166,13 @@ export function DashboardPage() {
     );
   }
 
-const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
-const totalCost = costs.reduce((sum, c) => sum + c.amount, 0);
-const totalInvestments = investments.reduce((sum, i) => sum + i.amount, 0);
-const investmentGains = totalInvestments * 0.057;
-const netWorth = totalIncome - totalCost + totalInvestments + investmentGains;
-const netIncome = totalIncome - totalCost;
-const savingsRate =
+  //const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
+  //const totalCost = costs.reduce((sum, c) => sum + c.amount, 0);
+  //const totalInvestments = investments.reduce((sum, i) => sum + i.amount, 0);
+  const investmentGains = totalInvestments * 0.057;
+  const netWorth = totalIncome - totalCost + totalInvestments + investmentGains;
+  const netIncome = totalIncome - totalCost;
+  const savingsRate =
   totalIncome > 0 ? ((netIncome / totalIncome) * 100).toFixed(1) : "0";
 
 // Categorias de despesas
@@ -162,7 +181,7 @@ costs.forEach((c) => {
   if (!c.category) return; // <-- Impede undefined
 
     categoryTotals[c.category] =
-    (categoryTotals[c.category] || 0) + c.amount;
+    (categoryTotals[c.category] || 0) + c.value;
 
 });
 
