@@ -125,7 +125,7 @@ export function DashboardPage() {
             expenses: 0,
             investments: 0,
           };
-          current.investments += inv.amount;
+          current.investments += inv.value;
           monthlyMap.set(key, current);
         });
 
@@ -212,7 +212,7 @@ investments.forEach((i) => {
   if (!i.type) return; // <-- Impede undefined
 
     investmentTypes[i.type] =
-    (investmentTypes[i.type] || 0) + i.amount;
+    (investmentTypes[i.type] || 0) + i.value;
 
 });
 

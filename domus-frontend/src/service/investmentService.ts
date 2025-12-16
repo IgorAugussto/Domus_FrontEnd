@@ -5,37 +5,31 @@ import api from '../lib/api';
 export interface Investment {
   id?: string;
   description: string;
-  amount: number;
+  value: number;
   date: string;
   type?: string;        // opcional, se tiver
   expectedReturn?: number; // opcional
 }
 
 // Dados que você envia pro back
-export interface CreateInvestmentRequest {
-  description: string;
-  amount: number;
-  date: string;
-  type?: string;
-  expectedReturn?: number;
-}
-
 export const investmentService = {
-  // GET /api/investments → lista todos
-  getAll: async (): Promise<Investment[]> => {
-    const response = await api.get('/investments');
-    return response.data; // retorna List<InvestmentsResponse>
+  create: async (data: any) => {
+    return api.post("/income", {
+      value: data.amount,
+      description: data.description,
+      date: data.date,
+      type: data.type,
+      expectedReturn: data.expectedReturn
+    });
   },
 
-  // GET /api/investments/total → total investido
-  getTotal: async (): Promise<number> => {
-    const response = await api.get('/investments/total');
-    return Number(response.data); // BigDecimal → number
+  getAll: async () => {
+    const response = await api.get("/income");
+    return response.data; // 👈 AQUI ESTAVA O ERRO DO DASHBOARD
   },
 
-  // POST /api/investments → cria novo
-  create: async (investment: CreateInvestmentRequest): Promise<Investment> => {
-    const response = await api.post('/investments', investment);
-    return response.data; // retorna InvestmentsResponse
-  },
+  getTotal: async () => {
+    const response = await api.get("/income/total");
+    return response.data;
+  }
 };

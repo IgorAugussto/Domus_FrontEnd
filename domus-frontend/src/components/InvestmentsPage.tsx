@@ -1,5 +1,5 @@
 // src/components/InvestmentsPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../ui-components/button';
 import { Input } from '../ui-components/input';
 import { Label } from '../ui-components/label';
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from '../ui-components/textArea';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui-components/card';
 import { Plus, TrendingUp } from 'lucide-react';
+import { investmentService } from '../service/investmentService';
 
 export default function InvestmentsPage() {
   const [amount, setAmount] = useState('');
@@ -14,18 +15,50 @@ export default function InvestmentsPage() {
   const [expectedReturn, setExpectedReturn] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [investments, setInvestments] = useState<any[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+      loadInvestment();
+    }, []);
+  
+    const loadInvestment = async () => {
+      try {
+        const data = await investmentService.getAll();
+        setInvestments(data);
+      } catch (err) {
+        console.error("Erro ao carregar investments:", err);
+      }
+    };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Apenas impede o envio sem dados (por enquanto sem salvar nada)
     if (!amount || !type || !expectedReturn || !date) return;
 
-    // limpa o formulário (apenas visualmente)
-    setAmount('');
-    setType('');
-    setExpectedReturn('');
-    setDescription('');
-    setDate(new Date().toISOString().split('T')[0]);
+    try {
+      await investmentService.create({
+      description: description || `${type}`,
+      amount: Number(amount),
+      date,
+      type,
+      expectedReturn,
+      });
+
+      await loadInvestment();
+
+      alert("Income salvo com sucesso!");
+      
+
+      // limpa o formulário (apenas visualmente)
+      setAmount('');
+      setType('');
+      setExpectedReturn('');
+      setDescription('');
+      setDate(new Date().toISOString().split('T')[0]);
+    } catch (err) {
+      console.error("Erro ao salvar income:", err);
+      alert("Erro ao salvar renda. Tente novamente.");
+    }
   };
 
   return (
@@ -85,18 +118,18 @@ export default function InvestmentsPage() {
               <div className="space-y-2">
                 <Label htmlFor="type">Investment Type</Label>
                 <Select value={type} onValueChange={setType} required>
-                  <SelectTrigger style={{ borderColor: 'var(--border)' }}>
+                  <SelectTrigger className="select-trigger" style={{ borderColor: 'var(--border)' }}>
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Stocks">Stocks</SelectItem>
-                    <SelectItem value="Bonds">Bonds</SelectItem>
-                    <SelectItem value="Real Estate">Real Estate</SelectItem>
-                    <SelectItem value="Crypto">Cryptocurrency</SelectItem>
-                    <SelectItem value="Mutual Funds">Mutual Funds</SelectItem>
-                    <SelectItem value="ETF">ETF</SelectItem>
-                    <SelectItem value="Savings">Savings Account</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                  <SelectContent className="select-content">
+                    <SelectItem className="select-item" value="Stocks">Stocks</SelectItem>
+                    <SelectItem className="select-item" value="Bonds">Bonds</SelectItem>
+                    <SelectItem className="select-item" value="Real Estate">Real Estate</SelectItem>
+                    <SelectItem className="select-item" value="Crypto">Cryptocurrency</SelectItem>
+                    <SelectItem className="select-item" value="Mutual Funds">Mutual Funds</SelectItem>
+                    <SelectItem className="select-item" value="ETF">ETF</SelectItem>
+                    <SelectItem className="select-item" value="Savings">Savings Account</SelectItem>
+                    <SelectItem className="select-item" value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
