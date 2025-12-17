@@ -32,6 +32,7 @@ import type { Investment } from "../service/investmentService";
 import { costService } from "../service/costService";
 import { incomeService } from "../service/incomeService";
 import { investmentService } from "../service/investmentService";
+import { dashboardService } from "../service/dashboardService";
 import { useState, useEffect } from "react";
 
 export function DashboardPage() {
@@ -41,6 +42,10 @@ export function DashboardPage() {
   const [totalIncome, setTotalIncome] = useState<number>(0);
   const [totalCost, setTotalCost] = useState<number>(0);
   const [totalInvestments, setTotalInvestments] = useState<number>(0);
+  const [investmentGains, setInvestmentGains] = useState(0);
+  const [netWorth, setNetWorth] = useState(0);
+  const [savingsRate, setSavingsRate] = useState("0");
+
 
   const [monthlyData, setMonthlyData] = useState<
     Array<{
@@ -64,6 +69,7 @@ export function DashboardPage() {
         totalIncomeValue,
         totalCostValue,
         totalInvestmentValue,
+        dashboardSummary,
       ] = await Promise.all([
         costService.getAll(),
         incomeService.getAll(),
@@ -71,6 +77,7 @@ export function DashboardPage() {
         incomeService.getTotal(),
         costService.getTotal(),
         investmentService.getTotal(),
+        dashboardService.getSummary(),
       ]);
 
       setCosts(costData);
@@ -80,6 +87,10 @@ export function DashboardPage() {
       setTotalIncome(totalIncomeValue);
       setTotalCost(totalCostValue);
       setTotalInvestments(totalInvestmentValue);
+
+      setInvestmentGains(Number(dashboardSummary.investmentGains));
+      setNetWorth(Number(dashboardSummary.netWorth));
+      setSavingsRate(dashboardSummary.savingsRate.toString());
 
 
         // Cálculo do histórico mensal 100% real
@@ -165,15 +176,12 @@ export function DashboardPage() {
       </div>
     );
   }
-
-  //const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
-  //const totalCost = costs.reduce((sum, c) => sum + c.amount, 0);
-  //const totalInvestments = investments.reduce((sum, i) => sum + i.amount, 0);
-  const investmentGains = totalInvestments * 0.057;
-  const netWorth = totalIncome - totalCost + totalInvestments + investmentGains;
-  const netIncome = totalIncome - totalCost;
-  const savingsRate =
-  totalIncome > 0 ? ((netIncome / totalIncome) * 100).toFixed(1) : "0";
+  
+  //const investmentGains = totalInvestments * 0.057;
+  //const netWorth = totalIncome - totalCost + totalInvestments + investmentGains;
+  //const netIncome = totalIncome - totalCost;
+  //const savingsRate =
+  //totalIncome > 0 ? ((netIncome / totalIncome) * 100).toFixed(1) : "0";
 
 // Categorias de despesas
 const categoryTotals: Record<string, number> = {};
@@ -365,7 +373,7 @@ const investmentPortfolio = Object.entries(investmentTypes).map(
               style={{ color: "var(--financial-success)" }}
             >
               <TrendingUp className="h-3 w-3 inline mr-1" />
-              +5.7% returns
+              
             </p>
           </CardContent>
         </Card>
