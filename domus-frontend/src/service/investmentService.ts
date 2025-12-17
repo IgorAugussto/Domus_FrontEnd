@@ -7,8 +7,8 @@ export interface Investment {
   description: string;
   value: number;
   date: string;
-  type?: string;        // opcional, se tiver
-  expectedReturn?: number; // opcional
+  typeInvestments: string;        // opcional, se tiver
+  expectedReturn: number; // opcional
 }
 
 // Dados que você envia pro back
@@ -18,7 +18,7 @@ export const investmentService = {
       value: data.amount,
       description: data.description,
       date: data.date,
-      type: data.type,
+      typeInvestments: data.type,
       expectedReturn: data.expectedReturn
     });
   },

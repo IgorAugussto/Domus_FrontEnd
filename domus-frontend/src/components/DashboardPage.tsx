@@ -209,10 +209,10 @@ const expenseCategories = Object.entries(categoryTotals).map(
 // Portfolio de investimentos
 const investmentTypes: Record<string, number> = {};
 investments.forEach((i) => {
-  if (!i.type) return; // <-- Impede undefined
+  if (!i.typeInvestments) return; // <-- Impede undefined
 
-    investmentTypes[i.type] =
-    (investmentTypes[i.type] || 0) + i.value;
+    investmentTypes[i.typeInvestments] =
+    (investmentTypes[i.typeInvestments] || 0) + i.value;
 
 });
 
