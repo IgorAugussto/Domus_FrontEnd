@@ -14,7 +14,7 @@ export interface Investment {
 // Dados que você envia pro back
 export const investmentService = {
   create: async (data: any) => {
-    return api.post("/income", {
+    return api.post("/investments", {
       value: data.amount,
       description: data.description,
       date: data.date,
@@ -24,12 +24,12 @@ export const investmentService = {
   },
 
   getAll: async () => {
-    const response = await api.get("/income");
+    const response = await api.get("/investments");
     return response.data; // 👈 AQUI ESTAVA O ERRO DO DASHBOARD
   },
 
   getTotal: async () => {
-    const response = await api.get("/income/total");
+    const response = await api.get("/investments/total");
     return response.data;
   }
 };

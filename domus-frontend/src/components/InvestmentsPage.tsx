@@ -175,16 +175,43 @@ export default function InvestmentsPage() {
       </Card>
 
       {/* LISTA DE INVESTIMENTOS */}
-      <Card style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
-        <CardHeader>
-          <CardTitle style={{ color: 'var(--card-foreground)' }}>Recent Investments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center py-4" style={{ color: 'var(--muted-foreground)' }}>
-            No investments yet
-          </p>
-        </CardContent>
-      </Card>
+      <Card style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+              <CardHeader>
+                <CardTitle style={{ color: "var(--card-foreground)" }}>
+                  Recent Income
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {investments.length === 0 ? (
+                  <p
+                    className="text-center py-4"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    No investments added yet
+                  </p>
+                ) : (
+                  <ul className="space-y-3">
+                    {investments.map((inc: any) => (
+                      <li
+                        key={inc.id}
+                        className="p-3 rounded-lg border"
+                        style={{
+                          borderColor: "var(--border)",
+                          background: "var(--card)",
+                        }}>
+                        <div className="flex justify-between">
+                          <span>{inc.description} - {inc.frequency}</span>
+                          <strong style={{ color: "var(--financial-income)" }}>
+                            ${inc.value}
+                          </strong>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{inc.date}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
     </div>
   );
 }

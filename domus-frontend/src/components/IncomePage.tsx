@@ -251,8 +251,7 @@ export default function IncomePage() {
                   style={{
                     borderColor: "var(--border)",
                     background: "var(--card)",
-                  }}
-                >
+                  }}>
                   <div className="flex justify-between">
                     <span>{inc.description} - {inc.frequency}</span>
                     <strong style={{ color: "var(--financial-income)" }}>
