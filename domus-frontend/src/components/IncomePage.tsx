@@ -20,6 +20,12 @@ import {
 import { Plus, Wallet } from "lucide-react";
 import { incomeService } from "../service/incomeService";
 
+const addOneYear = (dateStr: string) => {
+  const date = new Date(dateStr);
+  date.setFullYear(date.getFullYear() + 1);
+  return date.toISOString().split("T")[0];
+};
+
 export default function IncomePage() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -27,10 +33,23 @@ export default function IncomePage() {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [incomes, setIncomes] = useState<any[]>([]);
   const [frequency, setFrequency] = useState("");
+  const [autoFilled, setAutoFilled] = useState(false);
 
   useEffect(() => {
     loadIncomes();
   }, []);
+
+  useEffect(() => {
+    if (category === "Salary" && !autoFilled) {
+      setFrequency("Monthly");
+      setDate(addOneYear(new Date().toISOString().split("T")[0]));
+      setAutoFilled(true);
+    }
+
+    if (category !== "Salary") {
+      setAutoFilled(false);
+    }
+  }, [category]);
 
   const loadIncomes = async () => {
     try {
@@ -251,9 +270,12 @@ export default function IncomePage() {
                   style={{
                     borderColor: "var(--border)",
                     background: "var(--card)",
-                  }}>
+                  }}
+                >
                   <div className="flex justify-between">
-                    <span>{inc.description} - {inc.frequency}</span>
+                    <span>
+                      {inc.description} - {inc.frequency}
+                    </span>
                     <strong style={{ color: "var(--financial-income)" }}>
                       ${inc.value}
                     </strong>
