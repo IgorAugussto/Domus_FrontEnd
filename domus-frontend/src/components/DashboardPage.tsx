@@ -46,7 +46,6 @@ export function DashboardPage() {
   const [netWorth, setNetWorth] = useState(0);
   const [savingsRate, setSavingsRate] = useState("0");
 
-
   const [monthlyData, setMonthlyData] = useState<
     Array<{
       month: string;
@@ -55,43 +54,43 @@ export function DashboardPage() {
       investments: number;
     }>
   >([]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
 
-      const [
-        costData,
-        incomeData,
-        investmentData,
-        totalIncomeValue,
-        totalCostValue,
-        totalInvestmentValue,
-        dashboardSummary,
-      ] = await Promise.all([
-        costService.getAll(),
-        incomeService.getAll(),
-        investmentService.getAll(),
-        incomeService.getTotal(),
-        costService.getTotal(),
-        investmentService.getTotal(),
-        dashboardService.getSummary(),
-      ]);
+        const [
+          costData,
+          incomeData,
+          investmentData,
+          totalIncomeValue,
+          totalCostValue,
+          totalInvestmentValue,
+          dashboardSummary,
+        ] = await Promise.all([
+          costService.getAll(),
+          incomeService.getAll(),
+          investmentService.getAll(),
+          incomeService.getTotal(),
+          costService.getTotal(),
+          investmentService.getTotal(),
+          dashboardService.getSummary(),
+        ]);
 
-      setCosts(costData);
-      setIncomes(incomeData);
-      setInvestments(investmentData);
+        setCosts(costData);
+        setIncomes(incomeData);
+        setInvestments(investmentData);
 
-      setTotalIncome(totalIncomeValue);
-      setTotalCost(totalCostValue);
-      setTotalInvestments(totalInvestmentValue);
+        setTotalIncome(totalIncomeValue);
+        setTotalCost(totalCostValue);
+        setTotalInvestments(totalInvestmentValue);
 
-      setInvestmentGains(Number(dashboardSummary.investmentGains));
-      setNetWorth(Number(dashboardSummary.netWorth));
-      setSavingsRate(dashboardSummary.savingsRate.toString());
-
+        setInvestmentGains(Number(dashboardSummary.investmentGains));
+        setNetWorth(Number(dashboardSummary.netWorth));
+        setSavingsRate(dashboardSummary.savingsRate.toString());
 
         // Cálculo do histórico mensal 100% real
         const monthlyMap = new Map<
@@ -176,75 +175,77 @@ export function DashboardPage() {
       </div>
     );
   }
-  
+
   //const investmentGains = totalInvestments * 0.057;
   //const netWorth = totalIncome - totalCost + totalInvestments + investmentGains;
   //const netIncome = totalIncome - totalCost;
   //const savingsRate =
   //totalIncome > 0 ? ((netIncome / totalIncome) * 100).toFixed(1) : "0";
 
-// Categorias de despesas
-const categoryTotals: Record<string, number> = {};
-costs.forEach((c) => {
-  if (!c.category) return; // <-- Impede undefined
+  // Categorias de despesas
+  const categoryTotals: Record<string, number> = {};
+  costs.forEach((c) => {
+    if (!c.category) return; // <-- Impede undefined
 
-    categoryTotals[c.category] =
-    (categoryTotals[c.category] || 0) + c.value;
+    categoryTotals[c.category] = (categoryTotals[c.category] || 0) + c.value;
+  });
 
-});
+  const palette = [
+    "var(--financial-danger)",
+    "var(--financial-investment)",
+    "var(--financial-trust)",
+    "var(--financial-success)",
+    "var(--financial-neutral)",
+  ];
 
-const palette = [
-  "var(--financial-danger)",
-  "var(--financial-investment)",
-  "var(--financial-trust)",
-  "var(--financial-success)",
-  "var(--financial-neutral)",
-];
+  const expenseCategories = Object.entries(categoryTotals).map(
+    ([name, value], i) => {
+      const safeI = Number.isFinite(i) ? i : 0;
 
-const expenseCategories = Object.entries(categoryTotals).map(
-  ([name, value], i) => {
-    const safeI = Number.isFinite(i) ? i : 0;
+      return {
+        name,
+        value,
+        color: palette[safeI % palette.length], // 100% seguro
+      };
+    }
+  );
 
-    return {
-      name,
-      value,
-      color: palette[safeI % palette.length], // 100% seguro
-    };
-  }
-);
-
-
-// Portfolio de investimentos
-const investmentTypes: Record<string, number> = {};
-investments.forEach((i) => {
-  if (!i.typeInvestments) return; // <-- Impede undefined
+  // Portfolio de investimentos
+  const investmentTypes: Record<string, number> = {};
+  investments.forEach((i) => {
+    if (!i.typeInvestments) return; // <-- Impede undefined
 
     investmentTypes[i.typeInvestments] =
-    (investmentTypes[i.typeInvestments] || 0) + i.value;
+      (investmentTypes[i.typeInvestments] || 0) + i.value;
+  });
 
-});
+  const colors = ["#3b82f6", "#8b5cf6", "#06b6d4", "#f59e0b", "#10b981"];
 
-const colors = ["#3b82f6", "#8b5cf6", "#06b6d4", "#f59e0b", "#10b981"];
+  const investmentPortfolio = Object.entries(investmentTypes).map(
+    ([name, value]) => {
+      const percentage =
+        totalInvestments > 0
+          ? ((value / totalInvestments) * 100).toFixed(0)
+          : "0";
 
-const investmentPortfolio = Object.entries(investmentTypes).map(
-  ([name, value]) => {
-    const percentage =
-      totalInvestments > 0
-        ? ((value / totalInvestments) * 100).toFixed(0)
-        : "0";
+      const index = Object.keys(investmentTypes).indexOf(name);
 
-    const index = Object.keys(investmentTypes).indexOf(name);
+      // Garante que nunca será undefined
+      const safeIndex = index >= 0 ? index : 0;
 
-    // Garante que nunca será undefined
-    const safeIndex = index >= 0 ? index : 0;
+      return {
+        name,
+        value: Number(percentage),
+        color: colors[safeIndex % colors.length], // ← CORRIGIDO
+      };
+    }
+  );
 
-    return {
-      name,
-      value: Number(percentage),
-      color: colors[safeIndex % colors.length], // ← CORRIGIDO
-    };
-  }
-);
+  const expectedReturnAverage = totalInvestments > 0? investments.reduce((acc, inv) => {
+      return acc + Number(inv.value) * (Number(inv.expectedReturn) / 100);
+  }, 0) / totalInvestments * 100 : 0;
+
+
 
   return (
     <div className="space-y-6">
@@ -370,10 +371,9 @@ const investmentPortfolio = Object.entries(investmentTypes).map(
             </div>
             <p
               className="text-xs mt-1"
-              style={{ color: "var(--financial-success)" }}
-            >
+              style={{ color: "var(--financial-success)" }}>
               <TrendingUp className="h-3 w-3 inline mr-1" />
-              
+              +{expectedReturnAverage.toFixed(2)}% expected return
             </p>
           </CardContent>
         </Card>
