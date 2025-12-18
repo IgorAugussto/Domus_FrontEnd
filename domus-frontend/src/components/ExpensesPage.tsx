@@ -1,41 +1,112 @@
-import { useState } from 'react';
-import { Button } from '../ui-components/button';
-import { Input } from '../ui-components/input';
-import { Label } from '../ui-components/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui-components/select';
-import { Textarea } from '../ui-components/textArea';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui-components/Card';
-import { Plus, DollarSign } from 'lucide-react';
+// src/components/ExpensesPage.tsx
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../ui-components/card";
+import { Button } from "../ui-components/button";
+import { Input } from "../ui-components/input";
+import { Label } from "../ui-components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui-components/select";
+import { Textarea } from "../ui-components/textArea";
+import { DollarSign, Plus } from "lucide-react";
+import { costService } from "../service/costService";
 
-export function ExpensesPage() {
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('');
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+export default function ExpensesPage() {
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [costs, setCosts] = useState<any[]>([]);
+  const [frequency, setFrequency] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    loadCosts();
+  }, []);
+
+  const loadCosts = async () => {
+    try {
+      const data = await costService.getAll();
+      setCosts(data);
+    } catch (err) {
+      console.error("Erro ao carregar costs:", err);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock expense addition
-    console.log('Adding expense:', { amount, category, description, date });
-    // Reset form
-    setAmount('');
-    setCategory('');
-    setDescription('');
-    setDate(new Date().toISOString().split('T')[0]);
+
+    if (!amount || !category || !date) {
+      alert("Preencha todos os campos!");
+      return;
+    }
+
+    try {
+      await costService.create({
+        description: description || `${category}`,
+        amount: Number(amount),
+        date,
+        category,
+        frequency,
+      });
+
+      await loadCosts();
+
+      alert("Income salvo com sucesso!");
+
+      // Limpa o formulário
+      setAmount("");
+      setCategory("");
+      setDescription("");
+      setDate(new Date().toISOString().split("T")[0]);
+    } catch (error) {
+      console.error("Erro ao salvar income:", error);
+      alert("Erro ao salvar renda. Tente novamente.");
+    }
   };
 
   return (
     <div className="space-y-6">
+      {/* TÍTULO */}
       <div className="flex items-center gap-2">
-        <div className="p-2 rounded-lg bg-red-100">
-          <DollarSign className="h-6 w-6 text-red-600" />
+        <div
+          className="p-2 rounded-lg"
+          style={{ backgroundColor: "var(--financial-danger-light)" }}
+        >
+          <DollarSign
+            className="h-6 w-6"
+            style={{ color: "var(--financial-danger)" }}
+          />
         </div>
-        <h1 className="text-red-700">Add Expense</h1>
+        <h1
+          className="text-3xl font-bold"
+          style={{ color: "var(--financial-danger)" }}
+        >
+          Add Expense
+        </h1>
       </div>
 
-      <Card className="border-red-200 shadow-sm">
-        <CardHeader className="bg-gradient-to-r from-red-50 to-orange-50">
-          <CardTitle className="flex items-center gap-2 text-red-700">
+      {/* FORMULÁRIO */}
+      <Card
+        style={{
+          background: "var(--card)",
+          borderColor: "var(--financial-danger)",
+          color: "var(--card-foreground)",
+        }}
+      >
+        <CardHeader style={{ background: "var(--financial-danger-light)" }}>
+          <CardTitle
+            className="flex items-center gap-2"
+            style={{ color: "var(--financial-danger)" }}
+          >
             <Plus className="h-5 w-5" />
             New Expense
           </CardTitle>
@@ -53,6 +124,7 @@ export function ExpensesPage() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   required
+                  style={{ borderColor: "var(--border)" }}
                 />
               </div>
               <div className="space-y-2">
@@ -63,76 +135,147 @@ export function ExpensesPage() {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
+                  style={{ borderColor: "var(--border)" }}
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select value={category} onValueChange={setCategory} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="food">Food & Dining</SelectItem>
-                  <SelectItem value="transportation">Transportation</SelectItem>
-                  <SelectItem value="shopping">Shopping</SelectItem>
-                  <SelectItem value="entertainment">Entertainment</SelectItem>
-                  <SelectItem value="bills">Bills & Utilities</SelectItem>
-                  <SelectItem value="healthcare">Healthcare</SelectItem>
-                  <SelectItem value="education">Education</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select value={category} onValueChange={setCategory} required>
+                  <SelectTrigger
+                    className="select-trigger"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent className="select-content">
+                    <SelectItem className="select-item" value="Food & Dining">
+                      Food & Dining
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Transportation">
+                      Transportation
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Shopping">
+                      Shopping
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Entertainment">
+                      Entertainment
+                    </SelectItem>
+                    <SelectItem
+                      className="select-item"
+                      value="Bills & Utilities"
+                    >
+                      Bills & Utilities
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Healthcare">
+                      Healthcare
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Education">
+                      Education
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Other">
+                      Other
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="frequency">Frequency</Label>
+                <Select value={frequency} onValueChange={setFrequency}>
+                  <SelectTrigger className="select-trigger">
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent className="select-content">
+                    <SelectItem className="select-item" value="One-time">
+                      One-time
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Weekly">
+                      Weekly
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Bi-weekly">
+                      Bi-weekly
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Monthly">
+                      Monthly
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Quarterly">
+                      Quarterly
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Annually">
+                      Annually
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Description (optional)</Label>
               <Textarea
                 id="description"
-                placeholder="Enter expense description (optional)"
+                placeholder="Enter expense description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
+                style={{ borderColor: "var(--border)" }}
               />
             </div>
 
-            <Button type="submit" className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800">
+            <Button
+              type="submit"
+              className="w-full"
+              style={{
+                background: "var(--financial-danger)",
+                color: "white",
+              }}
+            >
               Add Expense
             </Button>
           </form>
         </CardContent>
       </Card>
 
-      {/* Recent Expenses Preview */}
-      <Card className="border-orange-200">
-        <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50">
-          <CardTitle className="text-orange-700">Recent Expenses</CardTitle>
+      {/* LISTA DE DESPESAS */}
+      <Card style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+        <CardHeader>
+          <CardTitle style={{ color: "var(--card-foreground)" }}>
+            Recent Expenses
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center p-3 border border-red-100 rounded-lg bg-red-50/50">
-              <div>
-                <div className="text-gray-900">Lunch at Restaurant</div>
-                <div className="text-sm text-red-600">Food & Dining • Today</div>
-              </div>
-              <div className="text-red-700 font-medium">-$25.50</div>
-            </div>
-            <div className="flex justify-between items-center p-3 border border-red-100 rounded-lg bg-red-50/50">
-              <div>
-                <div className="text-gray-900">Gas Station</div>
-                <div className="text-sm text-red-600">Transportation • Yesterday</div>
-              </div>
-              <div className="text-red-700 font-medium">-$45.00</div>
-            </div>
-            <div className="flex justify-between items-center p-3 border border-red-100 rounded-lg bg-red-50/50">
-              <div>
-                <div className="text-gray-900">Grocery Shopping</div>
-                <div className="text-sm text-red-600">Food & Dining • 2 days ago</div>
-              </div>
-              <div className="text-red-700 font-medium">-$87.30</div>
-            </div>
-          </div>
+          {costs.length === 0 ? (
+            <p
+              className="text-center py-4"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              No income added yet
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {costs.map((inc: any) => (
+                <li
+                  key={inc.id}
+                  className="p-3 rounded-lg border"
+                  style={{
+                    borderColor: "var(--border)",
+                    background: "var(--card)",
+                  }}
+                >
+                  <div className="flex justify-between">
+                    <span>
+                      {inc.description} - {inc.frequency}
+                    </span>
+                    <strong style={{ color: "var(--financial-danger)" }}>
+                      ${inc.value}
+                    </strong>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{inc.date}</p>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -2,105 +2,92 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* src/index.css - SUBSTITUA ESSAS PARTES */
 :root {
-  --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
+  /* ... suas variáveis atuais ... */
+
+  /* NOVAS CORES FINANCEIRAS (CLARO) */
+  --financial-success: #10b981;      /* Verde esmeralda claro */
+  --financial-success-light: #ecfdf5; /* Fundo verde suave */
+  --financial-danger: #ef4444;       /* Vermelho vivo */
+  --financial-danger-light: #fee2e2;  /* Fundo vermelho suave */
+  --financial-investment: #f59e0b;   /* Amarelo dourado */
+  --financial-investment-light: #fffbeb; /* Fundo amarelo suave */
+  --financial-trust: #3b82f6;        /* Azul confiável */
+  --financial-trust-light: #dbeafe;  /* Fundo azul suave */
+  --financial-income: #10b981; /* Verde esmeralda */
+  --financial-income-light: #ecfdf5; /* Verde clarinho para fundo */
+
+
+  /* FUNDO E CARD */
+  --background: #f8fafc;             /* Cinza azulado claro */
   --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --financial-success: #16a34a;
-  --financial-success-light: #22c55e;
-  --financial-danger: #dc2626;
-  --financial-danger-light: #ef4444;
-  --financial-investment: #f59e0b;
-  --financial-investment-light: #fbbf24;
-  --financial-trust: #2563eb;
-  --financial-trust-light: #3b82f6;
-  --financial-neutral: #6b7280;
-  --financial-expense: #7c2d12;
-  --financial-expense-light: #dc2626;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --card-foreground: #1e293b;
+  --border: #e2e8f0;
+
+  /* GRÁFICOS - CORES (LIGHT MODE) */
+  --chart-1: #10b981; /* income (verde) */
+  --chart-2: #ef4444; /* expenses (vermelho) */
+  --chart-3: #f59e0b; /* investments (amarelo) */
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --financial-success: #22c55e;
-  --financial-success-light: #4ade80;
-  --financial-danger: #ef4444;
-  --financial-danger-light: #f87171;
-  --financial-investment: #fbbf24;
-  --financial-investment-light: #fcd34d;
-  --financial-trust: #3b82f6;
-  --financial-trust-light: #60a5fa;
-  --financial-neutral: #9ca3af;
-  --financial-expense: #dc2626;
-  --financial-expense-light: #ef4444;
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  /* ... suas variáveis atuais ... */
+
+  /* NOVAS CORES FINANCEIRAS (ESCURO) */
+  --financial-success: #34d399;      /* Verde menta suave */
+  --financial-success-light: #064e3b; /* Fundo verde escuro */
+  --financial-danger: #f87171;       /* Vermelho rosado */
+  --financial-danger-light: #450a0a; /* Fundo vermelho escuro */
+  --financial-investment: #fbbf24;   /* Amarelo dourado suave */
+  --financial-investment-light: #451a03; /* Fundo amarelo escuro */
+  --financial-trust: #60a5fa;         /* Azul céu suave */
+  --financial-trust-light: #172554;  /* Fundo azul escuro */
+  --financial-income: #34d399; /* Verde mais suave para dark mode */
+  --financial-income-light: #064e3b; /* Fundo verde escuro */
+
+
+  /* FUNDO E CARD - ESCURO */
+  --background: #0f172a;             /* Azul ardósia ESCURO (não preto!) */
+  --card: #1e293b;                   /* Card cinza azulado */
+  --card-foreground: #e2e8f0;        /* Texto claro */
+  --border: #334155;                 /* Borda sutil */
+  --muted-foreground: #94a3b8;       /* Texto secundário */
+
+  /* GRÁFICOS - CORES SUAVES */
+  --chart-1: #34d399; /* income */
+  --chart-2: #f87171; /* expenses */
+  --chart-3: #fbbf24; /* investments */
 }
+
+/*SELECT FORM*/
+/* Wrapper do Select (botão que abre) */
+.select-trigger {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+/* Lista de opções */
+.select-content {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+}
+
+/* Cada item da lista */
+.select-item {
+  background-color: var(--card);
+  color: var(--card-foreground);
+}
+
+.select-item:hover {
+  background-color: var(--financial-income-light);
+  color: white;
+}
+
 
 @theme inline {
   --color-background: var(--background);
