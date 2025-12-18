@@ -24,6 +24,11 @@
   --card: #ffffff;
   --card-foreground: #1e293b;
   --border: #e2e8f0;
+
+  /* GRÁFICOS - CORES (LIGHT MODE) */
+  --chart-1: #10b981; /* income (verde) */
+  --chart-2: #ef4444; /* expenses (vermelho) */
+  --chart-3: #f59e0b; /* investments (amarelo) */
 }
 
 .dark {

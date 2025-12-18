@@ -413,7 +413,7 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
         <Card
           style={{ background: "var(--card)", borderColor: "var(--border)" }}
         >
@@ -473,6 +473,10 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
+        
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {expenseCategories.length > 0 && (
           <Card
             style={{ background: "var(--card)", borderColor: "var(--border)" }}
@@ -511,12 +515,9 @@ export function DashboardPage() {
             </CardContent>
           </Card>
         )}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card
-          style={{ background: "var(--card)", borderColor: "var(--border)" }}
-        >
+        {/*<Card
+          style={{ background: "var(--card)", borderColor: "var(--border)" }}>
           <CardHeader>
             <CardTitle style={{ color: "var(--card-foreground)" }}>
               Savings Goals
@@ -557,7 +558,7 @@ export function DashboardPage() {
               />
             </div>
           </CardContent>
-        </Card>
+        </Card>*/}
 
         <Card
           style={{ background: "var(--card)", borderColor: "var(--border)" }}
@@ -597,15 +598,14 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      <Card
+      {/*<Card
         style={{
           background: "var(--card)",
           borderColor:
             parseFloat(savingsRate) >= 20
               ? "var(--financial-success)"
               : "var(--financial-danger)",
-        }}
-      >
+        }}>
         <CardHeader
           style={{
             background:
@@ -679,7 +679,7 @@ export function DashboardPage() {
             </p>
           </div>
         </CardContent>
-      </Card>
+      </Card>*/}
     </div>
   );
 }

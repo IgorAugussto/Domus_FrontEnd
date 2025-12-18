@@ -267,7 +267,7 @@ export default function ExpensesPage() {
                     <span>
                       {inc.description} - {inc.frequency}
                     </span>
-                    <strong style={{ color: "var(--financial-income)" }}>
+                    <strong style={{ color: "var(--financial-danger)" }}>
                       ${inc.value}
                     </strong>
                   </div>
