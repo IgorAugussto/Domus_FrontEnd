@@ -5,7 +5,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui-components/card";
-import { Progress } from "../ui-components/progress";
 import {
   PieChart,
   Pie,
@@ -24,7 +23,6 @@ import {
   DollarSign,
   Wallet,
   Target,
-  AlertCircle,
 } from "lucide-react";
 import type { Cost } from "../service/costService";
 import type { Income } from "../service/incomeService";
@@ -34,6 +32,7 @@ import { incomeService } from "../service/incomeService";
 import { investmentService } from "../service/investmentService";
 import { dashboardService } from "../service/dashboardService";
 import { useState, useEffect } from "react";
+import type { MonthlyProjection } from "../service/dashboardService";
 
 export function DashboardPage() {
   const [costs, setCosts] = useState<Cost[]>([]);
@@ -45,128 +44,61 @@ export function DashboardPage() {
   const [investmentGains, setInvestmentGains] = useState(0);
   const [netWorth, setNetWorth] = useState(0);
   const [savingsRate, setSavingsRate] = useState("0");
-
-  const [monthlyData, setMonthlyData] = useState<
-    Array<{
-      month: string;
-      income: number;
-      expenses: number;
-      investments: number;
-    }>
-  >([]);
-
   const [loading, setLoading] = useState(true);
+  const [monthlyData, setMonthlyData] = useState<MonthlyProjection[]>([]);
+
 
   useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        setLoading(true);
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
 
-        const [
-          costData,
-          incomeData,
-          investmentData,
-          totalIncomeValue,
-          totalCostValue,
-          totalInvestmentValue,
-          dashboardSummary,
-        ] = await Promise.all([
-          costService.getAll(),
-          incomeService.getAll(),
-          investmentService.getAll(),
-          incomeService.getTotal(),
-          costService.getTotal(),
-          investmentService.getTotal(),
-          dashboardService.getSummary(),
-        ]);
+      const [
+        costData,
+        incomeData,
+        investmentData,
+        totalIncomeValue,
+        totalCostValue,
+        totalInvestmentValue,
+        dashboardSummary,
+        projectionData, // 🔥 NOVO
+      ] = await Promise.all([
+        costService.getAll(),
+        incomeService.getAll(),
+        investmentService.getAll(),
+        incomeService.getTotal(),
+        costService.getTotal(),
+        investmentService.getTotal(),
+        dashboardService.getSummary(),
+        dashboardService.getProjection(), // 🔥 NOVO
+      ]);
 
-        setCosts(costData);
-        setIncomes(incomeData);
-        setInvestments(investmentData);
+      // continua igual (KPIs e listas)
+      setCosts(costData);
+      setIncomes(incomeData);
+      setInvestments(investmentData);
 
-        setTotalIncome(totalIncomeValue);
-        setTotalCost(totalCostValue);
-        setTotalInvestments(totalInvestmentValue);
+      setTotalIncome(totalIncomeValue);
+      setTotalCost(totalCostValue);
+      setTotalInvestments(totalInvestmentValue);
 
-        setInvestmentGains(Number(dashboardSummary.investmentGains));
-        setNetWorth(Number(dashboardSummary.netWorth));
-        setSavingsRate(dashboardSummary.savingsRate.toString());
+      setInvestmentGains(Number(dashboardSummary.investmentGains));
+      setNetWorth(Number(dashboardSummary.netWorth));
+      setSavingsRate(dashboardSummary.savingsRate.toString());
 
-        // Cálculo do histórico mensal 100% real
-        const monthlyMap = new Map<
-          string,
-          { income: number; expenses: number; investments: number }
-        >();
+      // 🔥 AGORA O GRÁFICO VEM DO BACK
+      setMonthlyData(projectionData);
 
-        const getMonthKey = (dateStr: string): string => {
-          const date = new Date(dateStr);
-          return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-            2,
-            "0"
-          )}`;
-        };
+    } catch (err) {
+      console.error("Erro ao carregar dados:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        incomeData.forEach((i: Income) => {
-          const key = getMonthKey(i.date);
-          const current = monthlyMap.get(key) || {
-            income: 0,
-            expenses: 0,
-            investments: 0,
-          };
-          current.income += Number(i.value);
-          monthlyMap.set(key, current);
-        });
+  loadDashboardData();
+}, []);
 
-        costData.forEach((c: Cost) => {
-          const key = getMonthKey(c.date);
-          const current = monthlyMap.get(key) || {
-            income: 0,
-            expenses: 0,
-            investments: 0,
-          };
-          current.expenses += Number(c.value);
-          monthlyMap.set(key, current);
-        });
-
-        investmentData.forEach((inv: Investment) => {
-          const key = getMonthKey(inv.date);
-          const current = monthlyMap.get(key) || {
-            income: 0,
-            expenses: 0,
-            investments: 0,
-          };
-          current.investments += inv.value;
-          monthlyMap.set(key, current);
-        });
-
-        const sortedData = Array.from(monthlyMap.entries())
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([key, value]) => {
-            const [year, month] = key.split("-");
-            const monthName = new Date(
-              parseInt(year),
-              parseInt(month) - 1
-            ).toLocaleString("en-US", {
-              month: "short",
-            });
-            return {
-              month: monthName,
-              income: Number(value.income.toFixed(2)),
-              expenses: Number(value.expenses.toFixed(2)),
-              investments: Number(value.investments.toFixed(2)),
-            };
-          });
-
-        setMonthlyData(sortedData);
-      } catch (err) {
-        console.error("Erro ao carregar dados:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDashboardData();
-  }, []);
 
   if (loading) {
     return (

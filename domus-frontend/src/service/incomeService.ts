@@ -5,7 +5,7 @@ export interface Income {
   id?: string;
   description: string;
   value: number;
-  date: string;
+  startDate: string;
   category: string;
 }
 
@@ -14,7 +14,7 @@ export const incomeService = {
     return api.post("/income", {
       value: data.amount,
       description: data.description,
-      date: data.date,
+      startDate: data.startDate,
       category: data.category,
       frequency: data.frequency
     });
