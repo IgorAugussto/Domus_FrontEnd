@@ -6,6 +6,9 @@ export interface Income {
   description: string;
   value: number;
   startDate: string;
+  endDate: string;
+  frequency: string;
+  recurring: boolean;
   category: string;
 }
 

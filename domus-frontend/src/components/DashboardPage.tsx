@@ -33,6 +33,7 @@ import { investmentService } from "../service/investmentService";
 import { dashboardService } from "../service/dashboardService";
 import { useState, useEffect } from "react";
 import type { MonthlyProjection } from "../service/dashboardService";
+import type { YearlyProjection } from "../service/dashboardService";
 
 export function DashboardPage() {
   const [costs, setCosts] = useState<Cost[]>([]);
@@ -46,7 +47,8 @@ export function DashboardPage() {
   const [savingsRate, setSavingsRate] = useState("0");
   const [loading, setLoading] = useState(true);
   const [monthlyData, setMonthlyData] = useState<MonthlyProjection[]>([]);
-
+  const [yearlyData, setYearlyData] = useState<YearlyProjection[]>([]);
+  const [activeTab, setActiveTab] = useState<"GERAL" | "MENSAL">("GERAL");
 
   useEffect(() => {
   const loadDashboardData = async () => {
@@ -61,7 +63,8 @@ export function DashboardPage() {
         totalCostValue,
         totalInvestmentValue,
         dashboardSummary,
-        projectionData, // 🔥 NOVO
+        monthlyProjectionData,
+        yearlyProjectionData,
       ] = await Promise.all([
         costService.getAll(),
         incomeService.getAll(),
@@ -70,14 +73,20 @@ export function DashboardPage() {
         costService.getTotal(),
         investmentService.getTotal(),
         dashboardService.getSummary(),
-        dashboardService.getProjection(), // 🔥 NOVO
+        dashboardService.getMonthlyProjection(), // TAB MENSAL
+        dashboardService.getYearlyProjection(),  // TAB GERAL
       ]);
 
-      // continua igual (KPIs e listas)
+      /* ============================
+         LISTAS BASE
+      ============================ */
       setCosts(costData);
       setIncomes(incomeData);
       setInvestments(investmentData);
 
+      /* ============================
+         KPIs DO TOPO
+      ============================ */
       setTotalIncome(totalIncomeValue);
       setTotalCost(totalCostValue);
       setTotalInvestments(totalInvestmentValue);
@@ -86,11 +95,14 @@ export function DashboardPage() {
       setNetWorth(Number(dashboardSummary.netWorth));
       setSavingsRate(dashboardSummary.savingsRate.toString());
 
-      // 🔥 AGORA O GRÁFICO VEM DO BACK
-      setMonthlyData(projectionData);
+      /* ============================
+         DADOS DOS GRÁFICOS
+      ============================ */
+      setMonthlyData(monthlyProjectionData); // TAB MENSAL
+      setYearlyData(yearlyProjectionData);   // TAB GERAL
 
     } catch (err) {
-      console.error("Erro ao carregar dados:", err);
+      console.error("Erro ao carregar dados do dashboard:", err);
     } finally {
       setLoading(false);
     }
@@ -173,11 +185,14 @@ export function DashboardPage() {
     }
   );
 
-  const expectedReturnAverage = totalInvestments > 0? investments.reduce((acc, inv) => {
-      return acc + Number(inv.value) * (Number(inv.expectedReturn) / 100);
-  }, 0) / totalInvestments * 100 : 0;
-
-
+  const expectedReturnAverage =
+    totalInvestments > 0
+      ? (investments.reduce((acc, inv) => {
+          return acc + Number(inv.value) * (Number(inv.expectedReturn) / 100);
+        }, 0) /
+          totalInvestments) *
+        100
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -303,9 +318,10 @@ export function DashboardPage() {
             </div>
             <p
               className="text-xs mt-1"
-              style={{ color: "var(--financial-success)" }}>
-              <TrendingUp className="h-3 w-3 inline mr-1" />
-              +{expectedReturnAverage.toFixed(2)}% expected return
+              style={{ color: "var(--financial-success)" }}
+            >
+              <TrendingUp className="h-3 w-3 inline mr-1" />+
+              {expectedReturnAverage.toFixed(2)}% expected return
             </p>
           </CardContent>
         </Card>
@@ -343,6 +359,22 @@ export function DashboardPage() {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="flex gap-4 mb-4">
+        <button
+          className={activeTab === "GERAL" ? "tab-active" : "tab"}
+          onClick={() => setActiveTab("GERAL")}
+        >
+          Geral
+        </button>
+
+        <button
+          className={activeTab === "MENSAL" ? "tab-active" : "tab"}
+          onClick={() => setActiveTab("MENSAL")}
+        >
+          Mensal
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
@@ -404,8 +436,6 @@ export function DashboardPage() {
             )}
           </CardContent>
         </Card>
-
-        
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

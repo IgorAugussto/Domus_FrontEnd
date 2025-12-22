@@ -7,6 +7,14 @@ export interface MonthlyProjection {
   investments: number;
 }
 
+// Tipos usados no gráfico
+export interface YearlyProjection {
+  period: string;        // "2025-01" ou "2025-01-15"
+  income: number;
+  expenses: number;
+  investments: number;
+}
+
 export const dashboardService = {
   getSummary: async () => {
     const response = await api.get("/dashboard/summary");
@@ -14,8 +22,13 @@ export const dashboardService = {
   },
 
    // 🔥 NOVO MÉTODO
-  getProjection: async (): Promise<MonthlyProjection[]> => {
-    const response = await api.get("/dashboard/projection");
+  getMonthlyProjection: async (): Promise<MonthlyProjection[]> => {
+    const response = await api.get("/dashboard/projection/month");
+    return response.data;
+  },
+
+  getYearlyProjection: async (): Promise<YearlyProjection[]> => {
+    const response = await api.get("/dashboard/projection/year");
     return response.data;
   },
 };
