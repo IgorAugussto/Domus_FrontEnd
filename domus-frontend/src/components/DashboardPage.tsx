@@ -358,16 +358,16 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      <div className="flex gap-4 mb-4">
+      <div className="dashboard-tabs">
         <button
-          className={activeTab === "GERAL" ? "tab-active" : "tab"}
+          className={`dashboard-tab ${activeTab === "GERAL" ? "active" : "tab"}`}
           onClick={() => setActiveTab("GERAL")}
         >
           Geral
         </button>
 
         <button
-          className={activeTab === "MENSAL" ? "tab-active" : "tab"}
+          className={`dashboard-tab ${activeTab === "MENSAL" ? "active" : "tab"}`}
           onClick={() => setActiveTab("MENSAL")}
         >
           Mensal

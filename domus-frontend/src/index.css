@@ -209,3 +209,46 @@
 html {
   font-size: var(--font-size);
 }
+
+.dashboard-tabs {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 10px;
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.dashboard-tab {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  color: var(--muted-foreground);
+  font-weight: 500;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.1s ease;
+}
+
+.dashboard-tab:hover {
+  background-color: var(--financial-income-light);
+  color: var(--financial-income);
+}
+
+.dashboard-tab.active {
+  background-color: var(--financial-income);
+  color: white;
+
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.dashboard-tab:active {
+  transform: scale(0.97);
+}
