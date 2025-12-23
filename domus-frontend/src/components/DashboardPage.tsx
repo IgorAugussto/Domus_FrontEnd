@@ -185,14 +185,11 @@ export function DashboardPage() {
     }
   );
 
-  const expectedReturnAverage =
-    totalInvestments > 0
-      ? (investments.reduce((acc, inv) => {
-          return acc + Number(inv.value) * (Number(inv.expectedReturn) / 100);
-        }, 0) /
-          totalInvestments) *
-        100
-      : 0;
+  const expectedReturnAverage = totalInvestments > 0 ? (investments.reduce((acc, inv) => {
+      return acc + Number(inv.value) * (Number(inv.expectedReturn) / 100);
+    }, 0) / totalInvestments) * 100 : 0;
+  
+  const chartData = activeTab === "GERAL" ? yearlyData : monthlyData;
 
   return (
     <div className="space-y-6">
@@ -383,12 +380,12 @@ export function DashboardPage() {
         >
           <CardHeader>
             <CardTitle style={{ color: "var(--card-foreground)" }}>
-              Monthly Financial Trends
+              {activeTab === "GERAL" ? "Yearly Financial Trends" : "Monthly Financial Trends"}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={monthlyData}>
+              <AreaChart data={chartData}>
                 <CartesianGrid stroke="var(--border)" />
                 <XAxis dataKey="month" stroke="var(--muted-foreground)" />
                 <YAxis stroke="var(--muted-foreground)" />
