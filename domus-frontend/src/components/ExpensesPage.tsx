@@ -27,6 +27,8 @@ export default function ExpensesPage() {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [costs, setCosts] = useState<any[]>([]);
   const [frequency, setFrequency] = useState("");
+  const [duration, setDuration] = useState<number | null>(null);
+  const [showDurationInput, setShowDurationInput] = useState(false);
 
   useEffect(() => {
     loadCosts();
@@ -70,6 +72,18 @@ export default function ExpensesPage() {
     } catch (error) {
       console.error("Erro ao salvar income:", error);
       alert("Erro ao salvar renda. Tente novamente.");
+    }
+  };
+
+  const handleFrequencyChange = (value: string) => {
+    setFrequency(value);
+
+    if (value === "One-time") {
+      setDuration(1);
+      setShowDurationInput(false);
+    } else {
+      setDuration(null);
+      setShowDurationInput(true);
     }
   };
 
@@ -181,9 +195,10 @@ export default function ExpensesPage() {
                   </SelectContent>
                 </Select>
               </div>
+              {/* FREQUENCY */}
               <div className="space-y-2">
                 <Label htmlFor="frequency">Frequency</Label>
-                <Select value={frequency} onValueChange={setFrequency}>
+                <Select value={frequency} onValueChange={handleFrequencyChange}>
                   <SelectTrigger className="select-trigger">
                     <SelectValue placeholder="Select frequency" />
                   </SelectTrigger>
@@ -209,6 +224,28 @@ export default function ExpensesPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* 🔥 DURATION (ENTRA AQUI, LOGO ABAIXO) */}
+              {showDurationInput && (
+                <div className="space-y-2">
+                  <Label htmlFor="duration">
+                    {frequency === "Weekly" && "Number of weeks"}
+                    {frequency === "Bi-weekly" && "Number of bi-weekly periods"}
+                    {frequency === "Monthly" && "Number of months"}
+                    {frequency === "Quarterly" && "Number of quarters"}
+                    {frequency === "Annually" && "Number of years"}
+                  </Label>
+
+                  <Input
+                    id="duration"
+                    type="number"
+                    min={1}
+                    value={duration ?? ""}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    required
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

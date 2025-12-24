@@ -4,8 +4,10 @@ export interface Cost {
   id: string;
   description: string;
   value: number;
-  date: string;
-  category?: string;
+  startDate: string;
+  category: string;
+  frequency: string;
+  durationMonths: number;
 }
 
 export const costService = {
@@ -13,9 +15,10 @@ export const costService = {
     return api.post("/costs", {
       value: data.amount,
       description: data.description,
-      date: data.date,
+      startDate: data.startDate,
       category: data.category,
-      frequency: data.frequency
+      frequency: data.frequency,
+      durationMonths: data.durationMonths
     });
   },
 
