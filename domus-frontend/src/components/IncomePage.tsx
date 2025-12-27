@@ -26,11 +26,18 @@ const addOneYear = (dateStr: string) => {
   return date.toISOString().split("T")[0];
 };
 
+const formatDateToISO = (date: string) => {
+  if (!date) return "";
+  return date; // input[type=date] já retorna yyyy-MM-dd
+};
+
 export default function IncomePage() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [incomes, setIncomes] = useState<any[]>([]);
   const [frequency, setFrequency] = useState("");
   const [autoFilled, setAutoFilled] = useState(false);
@@ -72,9 +79,9 @@ export default function IncomePage() {
       await incomeService.create({
         description: description || `${category}`,
         amount: Number(amount),
-        date,
         category,
         frequency,
+        startDate: formatDateToISO(date),
       });
 
       await loadIncomes();
@@ -153,6 +160,7 @@ export default function IncomePage() {
                 <Input
                   id="date"
                   type="date"
+                  v-model="income.startDate"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
@@ -203,21 +211,21 @@ export default function IncomePage() {
                     <SelectItem className="select-item" value="One-time">
                       One-time
                     </SelectItem>
-                    <SelectItem className="select-item" value="Weekly">
+                    {/* <SelectItem className="select-item" value="Weekly">
                       Weekly
                     </SelectItem>
                     <SelectItem className="select-item" value="Bi-weekly">
                       Bi-weekly
-                    </SelectItem>
+                    </SelectItem>*/}
                     <SelectItem className="select-item" value="Monthly">
                       Monthly
                     </SelectItem>
-                    <SelectItem className="select-item" value="Quarterly">
+                    {/*<SelectItem className="select-item" value="Quarterly">
                       Quarterly
                     </SelectItem>
                     <SelectItem className="select-item" value="Annually">
                       Annually
-                    </SelectItem>
+                    </SelectItem>*/}
                   </SelectContent>
                 </Select>
               </div>
