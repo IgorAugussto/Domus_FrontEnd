@@ -19,6 +19,8 @@ import {
 } from "../ui-components/card";
 import { Plus, Wallet } from "lucide-react";
 import { incomeService } from "../service/incomeService";
+import { EditIncomeModal } from "./EditIncomeModal";
+import { DeleteIncomeModal } from "./DeleteIncomeModal";
 
 const addOneYear = (dateStr: string) => {
   const date = new Date(dateStr);
@@ -35,12 +37,12 @@ export default function IncomePage() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [incomes, setIncomes] = useState<any[]>([]);
   const [frequency, setFrequency] = useState("");
   const [autoFilled, setAutoFilled] = useState(false);
+  const [editingIncome, setEditingIncome] = useState<any | null>(null);
+  const [deletingIncome, setDeletingIncome] = useState<any | null>(null);
 
   useEffect(() => {
     loadIncomes();
@@ -280,21 +282,59 @@ export default function IncomePage() {
                     background: "var(--card)",
                   }}
                 >
-                  <div className="flex justify-between">
-                    <span>
-                      {inc.description} - {inc.frequency}
-                    </span>
-                    <strong style={{ color: "var(--financial-income)" }}>
-                      ${inc.value}
-                    </strong>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span>
+                        {inc.description} - {inc.frequency}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <strong style={{ color: "var(--financial-income)" }}>
+                        ${inc.value}
+                      </strong>
+
+                      <button
+                        onClick={() => setEditingIncome(inc)}
+                        className="hover:opacity-70"
+                        title="Edit income"
+                      >
+                        ✏️
+                      </button>
+
+                      <button
+                        onClick={() => setDeletingIncome(inc)}
+                        className="hover:opacity-70"
+                        title="Delete income"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">{inc.date}</p>
                 </li>
               ))}
             </ul>
           )}
         </CardContent>
       </Card>
+
+      {/* MODAL EDIT */}
+      {editingIncome && (
+        <EditIncomeModal
+          income={editingIncome}
+          onClose={() => setEditingIncome(null)}
+          onSaved={loadIncomes}
+        />
+      )}
+
+      {/* MODAL DELETE */}
+      {deletingIncome && (
+        <DeleteIncomeModal
+          income={deletingIncome}
+          onClose={() => setDeletingIncome(null)}
+          onDeleted={loadIncomes}
+        />
+      )}
     </div>
   );
 }

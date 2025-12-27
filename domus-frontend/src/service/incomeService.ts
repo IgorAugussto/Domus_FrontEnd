@@ -31,6 +31,20 @@ export const incomeService = {
   getTotal: async () => {
     const response = await api.get("/income/total");
     return response.data;
-  }
+  },
+
+  update: async (id: number, data: any) => {
+    return api.put(`/income/${id}`, {
+      value: data.amount,
+      description: data.description,
+      startDate: data.startDate,
+      category: data.category,
+      frequency: data.frequency,
+    });
+  },
+
+  delete: async (id: number) => {
+    return api.delete(`/income/${id}`);
+  },
 };
 
