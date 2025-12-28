@@ -20,6 +20,11 @@ import { Textarea } from "../ui-components/textArea";
 import { DollarSign, Plus } from "lucide-react";
 import { costService } from "../service/costService";
 
+const formatDateToISO = (date: string) => {
+  if (!date) return "";
+  return date; // input[type=date] já retorna yyyy-MM-dd
+};
+
 export default function ExpensesPage() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -55,7 +60,7 @@ export default function ExpensesPage() {
       await costService.create({
         description: description || `${category}`,
         amount: Number(amount),
-        date,
+        startDate: formatDateToISO(date),
         category,
         frequency,
       });
