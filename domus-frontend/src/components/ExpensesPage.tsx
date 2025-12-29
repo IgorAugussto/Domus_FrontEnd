@@ -56,6 +56,11 @@ export default function ExpensesPage() {
       return;
     }
 
+    if (frequency !== "One-time" && !duration) {
+      alert("Informe a duração para despesas recorrentes");
+    return;
+}
+
     try {
       await costService.create({
         description: description || `${category}`,
@@ -63,6 +68,7 @@ export default function ExpensesPage() {
         startDate: formatDateToISO(date),
         category,
         frequency,
+        durationInMonths: frequency === "One-time" ? 1 : duration,
       });
 
       await loadCosts();

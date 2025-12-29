@@ -6,7 +6,8 @@ export interface Investment {
   id?: string;
   description: string;
   value: number;
-  date: string;
+  startDate: string;
+  endDate: string;
   typeInvestments: string;        // opcional, se tiver
   expectedReturn: number; // opcional
 }
@@ -17,7 +18,8 @@ export const investmentService = {
     return api.post("/investments", {
       value: data.amount,
       description: data.description,
-      date: data.date,
+      startDate: data.startDate,
+      endDate: data.endDate,
       typeInvestments: data.type,
       expectedReturn: data.expectedReturn
     });

@@ -18,6 +18,8 @@ export const incomeService = {
       value: data.amount,
       description: data.description,
       startDate: data.startDate,
+      endDate: data.endDate,      // ✅
+      recurring: data.recurring,
       category: data.category,
       frequency: data.frequency
     });

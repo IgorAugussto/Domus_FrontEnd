@@ -5,24 +5,23 @@ import {
   CardTitle,
   CardContent,
 } from "../ui-components/card";
-import { incomeService } from "../service/incomeService";
 
-interface Props {
-  income: any;
-  onClose: () => void;
-  onDeleted: () => void;
+interface DeleteConfirmModalProps {
+  open: boolean;
+  title?: string;
+  description?: string;
+  onConfirm: () => Promise<void> | void;
+  onCancel: () => void;
 }
 
-export function DeleteIncomeModal({
-  income,
-  onClose,
-  onDeleted,
-}: Props) {
-  const handleDelete = async () => {
-    await incomeService.delete(income.id);
-    onDeleted();
-    onClose();
-  };
+export function DeleteConfirmModal({
+  open,
+  title = "Delete item?",
+  description = "This action cannot be undone.",
+  onConfirm,
+  onCancel,
+}: DeleteConfirmModalProps) {
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -33,15 +32,14 @@ export function DeleteIncomeModal({
           style={{ borderColor: "var(--border)" }}
         >
           <CardTitle className="text-lg font-semibold text-red-500">
-            Delete income?
+            {title}
           </CardTitle>
         </CardHeader>
 
         {/* CONTENT */}
         <CardContent className="space-y-4 pt-5">
           <p className="text-sm text-muted-foreground">
-            This action cannot be undone. This income will be permanently
-            removed.
+            {description}
           </p>
 
           {/* ACTIONS */}
@@ -51,14 +49,14 @@ export function DeleteIncomeModal({
           >
             <Button
               variant="outline"
-              onClick={onClose}
+              onClick={onCancel}
               className="px-5 h-10 text-sm cursor-pointer hover:opacity-70"
             >
               Cancel
             </Button>
 
             <Button
-              onClick={handleDelete}
+              onClick={onConfirm}
               className="px-6 h-10 text-sm font-medium cursor-pointer hover:opacity-70"
               style={{
                 background: "var(--destructive, #dc2626)",

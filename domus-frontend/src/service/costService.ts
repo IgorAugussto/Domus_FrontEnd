@@ -7,7 +7,7 @@ export interface Cost {
   startDate: string;
   category: string;
   frequency: string;
-  durationMonths: number;
+  durationInMonths: number;
 }
 
 export const costService = {
@@ -18,7 +18,7 @@ export const costService = {
       startDate: data.startDate,
       category: data.category,
       frequency: data.frequency,
-      durationMonths: data.durationMonths
+      durationInMonths: data.durationInMonths
     });
   },
 

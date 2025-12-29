@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "../ui-components/button";
 import { Input } from "../ui-components/input";
 import { Label } from "../ui-components/label";
@@ -16,43 +15,61 @@ import {
   CardTitle,
   CardContent,
 } from "../ui-components/card";
-import { incomeService } from "../service/incomeService";
+import { useState, useEffect } from "react";
 
-interface Props {
-  income: any;
-  onClose: () => void;
-  onSaved: () => void;
+interface EditEntityModalProps {
+  open: boolean;
+  title: string;
+  initialData: {
+    value: number;
+    category: string;
+    description: string;
+    startDate: string;
+    frequency: string;
+  };
+  onSave: (data: any) => Promise<void>;
+  onCancel: () => void;
 }
 
-export function EditIncomeModal({ income, onClose, onSaved }: Props) {
-  const [amount, setAmount] = useState(income.value);
-  const [category, setCategory] = useState(income.category);
-  const [description, setDescription] = useState(income.description);
-  const [date, setDate] = useState(income.startDate);
-  const [frequency, setFrequency] = useState(income.frequency);
+export function EditEntityModal({
+  open,
+  title,
+  initialData,
+  onSave,
+  onCancel,
+}: EditEntityModalProps) {
+  const [amount, setAmount] = useState(initialData.value);
+  const [category, setCategory] = useState(initialData.category);
+  const [description, setDescription] = useState(initialData.description);
+  const [date, setDate] = useState(initialData.startDate);
+  const [frequency, setFrequency] = useState(initialData.frequency);
+
+  useEffect(() => {
+    setAmount(initialData.value);
+    setCategory(initialData.category);
+    setDescription(initialData.description);
+    setDate(initialData.startDate);
+    setFrequency(initialData.frequency);
+  }, [initialData]);
+
+  if (!open) return null;
 
   const handleSave = async () => {
-    await incomeService.update(income.id, {
+    await onSave({
       amount,
-      description,
       category,
-      frequency,
+      description,
       startDate: date,
+      frequency,
     });
-
-    onSaved();
-    onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <Card className="w-full max-w-xl shadow-2xl">
         {/* HEADER */}
-        <CardHeader
-          className="border-b"
-          style={{ borderColor: "var(--border)" }}
-        >
-          <CardTitle className="text-xl font-semibold">Edit Income</CardTitle>
+        <CardHeader className="border-b">
+          <CardTitle className="text-xl font-semibold">{title}</CardTitle>
         </CardHeader>
 
         {/* CONTENT */}
@@ -60,7 +77,7 @@ export function EditIncomeModal({ income, onClose, onSaved }: Props) {
           {/* AMOUNT + DATE */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Amount</Label>
+              <Label>Amount</Label>
               <Input
                 type="number"
                 value={amount}
@@ -69,7 +86,7 @@ export function EditIncomeModal({ income, onClose, onSaved }: Props) {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Date</Label>
+              <Label>Date</Label>
               <Input
                 type="date"
                 value={date}
@@ -81,44 +98,29 @@ export function EditIncomeModal({ income, onClose, onSaved }: Props) {
           {/* CATEGORY + FREQUENCY */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Category</Label>
+              <Label>Category</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem className="select-item" value="Salary">
-                    Salary
-                  </SelectItem>
-                  <SelectItem className="select-item" value="Freelance">
-                    Freelance
-                  </SelectItem>
-                  <SelectItem className="select-item" value="Bonus">
-                    Bonus
-                  </SelectItem>
-                  <SelectItem className="select-item" value="Investment">
-                    Investment
-                  </SelectItem>
-                  <SelectItem className="select-item" value="Gift">
-                    Gift
-                  </SelectItem>
-                  <SelectItem className="select-item" value="Other">
-                    Other
-                  </SelectItem>
+                  <SelectItem value="Salary">Salary</SelectItem>
+                  <SelectItem value="Freelance">Freelance</SelectItem>
+                  <SelectItem value="Bonus">Bonus</SelectItem>
+                  <SelectItem value="Investment">Investment</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Frequency</Label>
+              <Label>Frequency</Label>
               <Select value={frequency} onValueChange={setFrequency}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem className="select-item" value="One-time">
-                    One-time
-                  </SelectItem>
+                  <SelectItem value="One-time">One-time</SelectItem>
                   <SelectItem value="Monthly">Monthly</SelectItem>
                 </SelectContent>
               </Select>
@@ -127,7 +129,7 @@ export function EditIncomeModal({ income, onClose, onSaved }: Props) {
 
           {/* DESCRIPTION */}
           <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">Description</Label>
+            <Label>Description</Label>
             <Textarea
               rows={3}
               value={description}
@@ -136,26 +138,21 @@ export function EditIncomeModal({ income, onClose, onSaved }: Props) {
           </div>
 
           {/* ACTIONS */}
-          {/* ACTIONS */}
-          <div
-            className="flex justify-end gap-3 pt-5 border-t"
-            style={{ borderColor: "var(--border)" }}
-          >
+          <div className="flex justify-end gap-3 pt-5 border-t">
             <Button
+              type="submit"
+              className="cursor-pointer"
               variant="outline"
-              onClick={onClose}
-              className="px-5 h-10 text-sm cursor-pointer hover:opacity-70"
+              onClick={onCancel}
             >
               Cancel
             </Button>
 
             <Button
+              type="submit"
+              className="cursor-pointer"
               onClick={handleSave}
-              className="px-6 h-10 text-sm font-medium transition-opacity cursor-pointer hover:opacity-70"
-              style={{
-                background: "var(--financial-income)",
-                color: "white",
-              }}
+              style={{ background: "var(--financial-income)", color: "white" }}
             >
               Save changes
             </Button>

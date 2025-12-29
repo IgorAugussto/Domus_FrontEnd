@@ -51,66 +51,64 @@ export function DashboardPage() {
   const [activeTab, setActiveTab] = useState<"GERAL" | "MENSAL">("GERAL");
 
   useEffect(() => {
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
 
-      const [
-        costData,
-        incomeData,
-        investmentData,
-        totalIncomeValue,
-        totalCostValue,
-        totalInvestmentValue,
-        dashboardSummary,
-        monthlyProjectionData,
-        yearlyProjectionData,
-      ] = await Promise.all([
-        costService.getAll(),
-        incomeService.getAll(),
-        investmentService.getAll(),
-        incomeService.getTotal(),
-        costService.getTotal(),
-        investmentService.getTotal(),
-        dashboardService.getSummary(),
-        dashboardService.getMonthlyProjection(), // TAB MENSAL
-        dashboardService.getYearlyProjection(),  // TAB GERAL
-      ]);
+        const [
+          costData,
+          incomeData,
+          investmentData,
+          totalIncomeValue,
+          totalCostValue,
+          totalInvestmentValue,
+          dashboardSummary,
+          monthlyProjectionData,
+          yearlyProjectionData,
+        ] = await Promise.all([
+          costService.getAll(),
+          incomeService.getAll(),
+          investmentService.getAll(),
+          incomeService.getTotal(),
+          costService.getTotal(),
+          investmentService.getTotal(),
+          dashboardService.getSummary(),
+          dashboardService.getMonthlyProjection(), // TAB MENSAL
+          dashboardService.getYearlyProjection(), // TAB GERAL
+        ]);
 
-      /* ============================
+        /* ============================
          LISTAS BASE
       ============================ */
-      setCosts(costData);
-      setIncomes(incomeData);
-      setInvestments(investmentData);
+        setCosts(costData);
+        setIncomes(incomeData);
+        setInvestments(investmentData);
 
-      /* ============================
+        /* ============================
          KPIs DO TOPO
       ============================ */
-      setTotalIncome(totalIncomeValue);
-      setTotalCost(totalCostValue);
-      setTotalInvestments(totalInvestmentValue);
+        setTotalIncome(totalIncomeValue);
+        setTotalCost(totalCostValue);
+        setTotalInvestments(totalInvestmentValue);
 
-      setInvestmentGains(Number(dashboardSummary.investmentGains));
-      setNetWorth(Number(dashboardSummary.netWorth));
-      setSavingsRate(dashboardSummary.savingsRate.toString());
+        setInvestmentGains(Number(dashboardSummary.investmentGains));
+        setNetWorth(Number(dashboardSummary.netWorth));
+        setSavingsRate(dashboardSummary.savingsRate.toString());
 
-      /* ============================
+        /* ============================
          DADOS DOS GRÁFICOS
       ============================ */
-      setMonthlyData(monthlyProjectionData); // TAB MENSAL
-      setYearlyData(yearlyProjectionData);   // TAB GERAL
+        setMonthlyData(monthlyProjectionData); // TAB MENSAL
+        setYearlyData(yearlyProjectionData); // TAB GERAL
+      } catch (err) {
+        console.error("Erro ao carregar dados do dashboard:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    } catch (err) {
-      console.error("Erro ao carregar dados do dashboard:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  loadDashboardData();
-}, []);
-
+    loadDashboardData();
+  }, []);
 
   if (loading) {
     return (
@@ -185,10 +183,15 @@ export function DashboardPage() {
     }
   );
 
-  const expectedReturnAverage = totalInvestments > 0 ? (investments.reduce((acc, inv) => {
-      return acc + Number(inv.value) * (Number(inv.expectedReturn) / 100);
-    }, 0) / totalInvestments) * 100 : 0;
-  
+  const expectedReturnAverage =
+    totalInvestments > 0
+      ? (investments.reduce((acc, inv) => {
+          return acc + Number(inv.value) * (Number(inv.expectedReturn) / 100);
+        }, 0) /
+          totalInvestments) *
+        100
+      : 0;
+
   const chartData = activeTab === "GERAL" ? yearlyData : monthlyData;
 
   return (
@@ -235,8 +238,9 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-success)" }}
             >
-              $
-              {totalIncome.toLocaleString("en-US", {
+              {totalIncome.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
                 minimumFractionDigits: 2,
               })}
             </div>
@@ -273,7 +277,11 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-danger)" }}
             >
-              ${totalCost.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              {totalCost.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+                minimumFractionDigits: 2,
+              })}
             </div>
             <p
               className="text-xs mt-1"
@@ -308,8 +316,9 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-investment)" }}
             >
-              $
-              {(totalInvestments + investmentGains).toLocaleString("en-US", {
+              {totalInvestments.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
                 minimumFractionDigits: 2,
               })}
             </div>
@@ -346,7 +355,11 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-trust)" }}
             >
-              ${netWorth.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              {netWorth.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+                minimumFractionDigits: 2,
+              })}
             </div>
             <p
               className="text-xs mt-1"
@@ -360,14 +373,18 @@ export function DashboardPage() {
 
       <div className="dashboard-tabs">
         <button
-          className={`dashboard-tab ${activeTab === "GERAL" ? "active" : "tab"}`}
+          className={`dashboard-tab ${
+            activeTab === "GERAL" ? "active" : "tab"
+          }`}
           onClick={() => setActiveTab("GERAL")}
         >
           Geral
         </button>
 
         <button
-          className={`dashboard-tab ${activeTab === "MENSAL" ? "active" : "tab"}`}
+          className={`dashboard-tab ${
+            activeTab === "MENSAL" ? "active" : "tab"
+          }`}
           onClick={() => setActiveTab("MENSAL")}
         >
           Mensal
@@ -380,7 +397,9 @@ export function DashboardPage() {
         >
           <CardHeader>
             <CardTitle style={{ color: "var(--card-foreground)" }}>
-              {activeTab === "GERAL" ? "Yearly Financial Trends" : "Monthly Financial Trends"}
+              {activeTab === "GERAL"
+                ? "Yearly Financial Trends"
+                : "Monthly Financial Trends"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -395,6 +414,15 @@ export function DashboardPage() {
                     borderColor: "var(--border)",
                     color: "var(--card-foreground)",
                   }}
+                  formatter={(value: number, name: string) => [
+                    value.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }),
+                    name,
+                  ]}
                 />
                 <Area
                   type="monotone"

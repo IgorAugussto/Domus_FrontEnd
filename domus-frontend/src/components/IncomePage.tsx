@@ -19,8 +19,8 @@ import {
 } from "../ui-components/card";
 import { Plus, Wallet } from "lucide-react";
 import { incomeService } from "../service/incomeService";
-import { EditIncomeModal } from "./EditIncomeModal";
-import { DeleteIncomeModal } from "./DeleteIncomeModal";
+import { EditEntityModal } from "./EditEntityModal";
+import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 
 const addOneYear = (dateStr: string) => {
   const date = new Date(dateStr);
@@ -41,8 +41,11 @@ export default function IncomePage() {
   const [incomes, setIncomes] = useState<any[]>([]);
   const [frequency, setFrequency] = useState("");
   const [autoFilled, setAutoFilled] = useState(false);
+  const [selectedIncome, setSelectedIncome] = useState<any>(null);
   const [editingIncome, setEditingIncome] = useState<any | null>(null);
+  const [showEdit, setShowEdit] = useState(false);
   const [deletingIncome, setDeletingIncome] = useState<any | null>(null);
+  const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
     loadIncomes();
@@ -51,7 +54,6 @@ export default function IncomePage() {
   useEffect(() => {
     if (category === "Salary" && !autoFilled) {
       setFrequency("Monthly");
-      setDate(addOneYear(new Date().toISOString().split("T")[0]));
       setAutoFilled(true);
     }
 
@@ -83,7 +85,7 @@ export default function IncomePage() {
         amount: Number(amount),
         category,
         frequency,
-        startDate: formatDateToISO(date),
+        startDate: date,
       });
 
       await loadIncomes();
@@ -98,6 +100,33 @@ export default function IncomePage() {
     } catch (error) {
       console.error("Erro ao salvar income:", error);
       alert("Erro ao salvar renda. Tente novamente.");
+    }
+  };
+
+  const handleDeleteIncome = async () => {
+    if (!selectedIncome) return;
+
+    try {
+      await incomeService.delete(selectedIncome.id);
+      await loadIncomes();
+      setShowDelete(false);
+    } catch (error) {
+      console.error("Erro ao deletar income:", error);
+      alert("Erro ao deletar renda.");
+    }
+  };
+
+  const handleEditIncome = async (data: any) => {
+    if (!editingIncome) return;
+
+    try {
+      await incomeService.update(editingIncome.id, data);
+      await loadIncomes();
+      setShowEdit(false);
+      setEditingIncome(null);
+    } catch (error) {
+      console.error("Erro ao editar income:", error);
+      alert("Erro ao editar income.");
     }
   };
 
@@ -162,7 +191,6 @@ export default function IncomePage() {
                 <Input
                   id="date"
                   type="date"
-                  v-model="income.startDate"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
@@ -295,16 +323,25 @@ export default function IncomePage() {
                       </strong>
 
                       <button
-                        onClick={() => setEditingIncome(inc)}
-                        className="hover:opacity-70"
+                        type="button"
+                        onClick={() => {
+                          setEditingIncome(inc);
+                          setShowEdit(true);
+                        }}
+                        className="hover:opacity-70 cursor-pointer"
                         title="Edit income"
                       >
                         ✏️
                       </button>
 
                       <button
-                        onClick={() => setDeletingIncome(inc)}
-                        className="hover:opacity-70"
+                        type="button"
+                        onClick={() => {
+                          setDeletingIncome(inc);
+                          setSelectedIncome(inc);
+                          setShowDelete(true);
+                        }}
+                        className="hover:opacity-70 cursor-pointer"
                         title="Delete income"
                       >
                         🗑️
@@ -320,19 +357,27 @@ export default function IncomePage() {
 
       {/* MODAL EDIT */}
       {editingIncome && (
-        <EditIncomeModal
-          income={editingIncome}
-          onClose={() => setEditingIncome(null)}
-          onSaved={loadIncomes}
+        <EditEntityModal
+          open={showEdit}
+          title="Edit income"
+          initialData={editingIncome}
+          onSave={handleEditIncome}
+          onCancel={() => setShowEdit(false)}
         />
       )}
 
       {/* MODAL DELETE */}
       {deletingIncome && (
-        <DeleteIncomeModal
-          income={deletingIncome}
-          onClose={() => setDeletingIncome(null)}
-          onDeleted={loadIncomes}
+        <DeleteConfirmModal
+          open={showDelete}
+          title="Delete income?"
+          description="This action cannot be undone. This income will be permanently removed."
+          onConfirm={handleDeleteIncome}
+          onCancel={() => {
+            setShowDelete(false);
+            setDeletingIncome(null);
+            setSelectedIncome(null);
+          }}
         />
       )}
     </div>
