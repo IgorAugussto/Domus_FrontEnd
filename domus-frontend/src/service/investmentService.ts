@@ -33,5 +33,21 @@ export const investmentService = {
   getTotal: async () => {
     const response = await api.get("/investments/total");
     return response.data;
-  }
+  },
+
+  update: async (id: number, data: any) => {
+      return api.put(`/investments/${id}`, {
+        value: data.amount,
+        description: data.description,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        category: data.category,
+        typeInvestments: data.type,
+        expectedReturn: data.expectedReturn
+      });
+    },
+  
+    delete: async (id: number) => {
+      return api.delete(`/investments/${id}`);
+    },
 };

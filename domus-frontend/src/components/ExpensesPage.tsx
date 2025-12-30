@@ -397,6 +397,7 @@ export default function ExpensesPage() {
           title="Edit expense"
           initialData={editingCost}
           showDurationInMonths={true}
+          showExpenseCategories={true}
           onSave={handleEditCost}
           onCancel={() => {
             setShowEdit(false);

@@ -19,6 +19,8 @@ import {
 } from "../ui-components/card";
 import { Plus, TrendingUp } from "lucide-react";
 import { investmentService } from "../service/investmentService";
+import { EditEntityModal } from "./EditEntityModal";
+import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 
 export default function InvestmentsPage() {
   const [amount, setAmount] = useState("");
@@ -32,6 +34,13 @@ export default function InvestmentsPage() {
     new Date().toISOString().split("T")[0]
   );
   const [investments, setInvestments] = useState<any[]>([]);
+  const [selectedInvestment, setSelectedInvestment] = useState<any>(null);
+  const [editingInvestment, setEditingInvestment] = useState<any | null>(null);
+  const [showEdit, setShowEdit] = useState(false);
+  const [deletingInvestment, setDeletingInvestment] = useState<any | null>(
+    null
+  );
+  const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
     loadInvestment();
@@ -75,6 +84,33 @@ export default function InvestmentsPage() {
     } catch (err) {
       console.error("Erro ao salvar income:", err);
       alert("Erro ao salvar renda. Tente novamente.");
+    }
+  };
+
+  const handleDeleteInvestment = async () => {
+    if (!selectedInvestment) return;
+
+    try {
+      await investmentService.delete(selectedInvestment.id);
+      await loadInvestment();
+      setShowDelete(false);
+    } catch (error) {
+      console.error("Erro ao deletar income:", error);
+      alert("Erro ao deletar renda.");
+    }
+  };
+
+  const handleEditInvestment = async (data: any) => {
+    if (!editingInvestment) return;
+
+    try {
+      await investmentService.update(editingInvestment.id, data);
+      await loadInvestment();
+      setShowEdit(false);
+      setEditingInvestment(null);
+    } catch (error) {
+      console.error("Erro ao editar income:", error);
+      alert("Erro ao editar income.");
     }
   };
 
@@ -264,13 +300,43 @@ export default function InvestmentsPage() {
                     background: "var(--card)",
                   }}
                 >
-                  <div className="flex justify-between">
-                    <span>
-                      {inc.description} - {inc.frequency}
-                    </span>
-                    <strong style={{ color: "var(--financial-income)" }}>
-                      ${inc.value}
-                    </strong>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span>
+                        {inc.description} - {inc.expectedReturn}%
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <strong style={{ color: "var(--financial-income)" }}>
+                        ${inc.value}
+                      </strong>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingInvestment(inc);
+                          setShowEdit(true);
+                        }}
+                        className="hover:opacity-70 cursor-pointer"
+                        title="Edit outgoing"
+                      >
+                        ✏️
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeletingInvestment(inc);
+                          setSelectedInvestment(inc);
+                          setShowDelete(true);
+                        }}
+                        className="hover:opacity-70 cursor-pointer"
+                        title="Delete outgoing"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
                   <p className="text-sm text-muted-foreground">{inc.date}</p>
                 </li>
@@ -279,6 +345,32 @@ export default function InvestmentsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* MODAL EDIT */}
+      {editingInvestment && (
+        <EditEntityModal
+          open={showEdit}
+          title="Edit investment"
+          initialData={editingInvestment}
+          onSave={handleEditInvestment}
+          onCancel={() => setShowEdit(false)}
+        />
+      )}
+
+      {/* MODAL DELETE */}
+      {deletingInvestment && (
+        <DeleteConfirmModal
+          open={showDelete}
+          title="Delete investment?"
+          description="This action cannot be undone. This investment will be permanently removed."
+          onConfirm={handleDeleteInvestment}
+          onCancel={() => {
+            setShowDelete(false);
+            setDeletingInvestment(null);
+            setSelectedInvestment(null);
+          }}
+        />
+      )}
     </div>
   );
 }
