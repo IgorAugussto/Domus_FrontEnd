@@ -1,34 +1,21 @@
+// src/components/EditEntityModal.tsx
+import { useState, useEffect } from "react";
 import { Button } from "../ui-components/button";
-import { Input } from "../ui-components/input";
-import { Label } from "../ui-components/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui-components/select";
-import { Textarea } from "../ui-components/textArea";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
 } from "../ui-components/card";
-import { useState, useEffect } from "react";
+import { Input } from "../ui-components/input";
 
 interface EditEntityModalProps {
   open: boolean;
   title: string;
-  initialData: {
-    value: number;
-    category: string;
-    description: string;
-    startDate: string;
-    frequency: string;
-  };
-  onSave: (data: any) => Promise<void>;
+  initialData: any;
+  onSave: (data: any) => void;
   onCancel: () => void;
+  showDurationInMonths?: boolean;
 }
 
 export function EditEntityModal({
@@ -37,122 +24,88 @@ export function EditEntityModal({
   initialData,
   onSave,
   onCancel,
+  showDurationInMonths = false,
 }: EditEntityModalProps) {
-  const [amount, setAmount] = useState(initialData.value);
-  const [category, setCategory] = useState(initialData.category);
-  const [description, setDescription] = useState(initialData.description);
-  const [date, setDate] = useState(initialData.startDate);
-  const [frequency, setFrequency] = useState(initialData.frequency);
+  const [formData, setFormData] = useState<any>({});
 
   useEffect(() => {
-    setAmount(initialData.value);
-    setCategory(initialData.category);
-    setDescription(initialData.description);
-    setDate(initialData.startDate);
-    setFrequency(initialData.frequency);
+    if (initialData) {
+      setFormData({
+        ...initialData,
+        amount: initialData.value,
+      });
+    }
   }, [initialData]);
 
   if (!open) return null;
 
-  const handleSave = async () => {
-    await onSave({
-      amount,
-      category,
-      description,
-      startDate: date,
-      frequency,
-    });
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSubmit = () => {
+    onSave(formData);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <Card className="w-full max-w-xl shadow-2xl">
-        {/* HEADER */}
-        <CardHeader className="border-b">
-          <CardTitle className="text-xl font-semibold">{title}</CardTitle>
+      <Card className="w-full max-w-lg shadow-2xl">
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
         </CardHeader>
 
-        {/* CONTENT */}
-        <CardContent className="space-y-6 pt-6">
-          {/* AMOUNT + DATE */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Amount</Label>
-              <Input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
-              />
-            </div>
+        <CardContent className="space-y-4">
+          <Input
+            value={formData.description || ""}
+            onChange={(e) => handleChange("description", e.target.value)}
+            placeholder="Description"
+          />
 
-            <div className="space-y-2">
-              <Label>Date</Label>
-              <Input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </div>
-          </div>
+          <Input
+            type="number"
+            value={formData.amount || ""}
+            onChange={(e) =>
+              handleChange("amount", Number(e.target.value))
+            }
+            placeholder="Amount"
+          />
 
-          {/* CATEGORY + FREQUENCY */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Salary">Salary</SelectItem>
-                  <SelectItem value="Freelance">Freelance</SelectItem>
-                  <SelectItem value="Bonus">Bonus</SelectItem>
-                  <SelectItem value="Investment">Investment</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <Input
+            type="date"
+            value={formData.startDate || ""}
+            onChange={(e) => handleChange("startDate", e.target.value)}
+          />
 
-            <div className="space-y-2">
-              <Label>Frequency</Label>
-              <Select value={frequency} onValueChange={setFrequency}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="One-time">One-time</SelectItem>
-                  <SelectItem value="Monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* DESCRIPTION */}
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+          {showDurationInMonths && (
+            <Input
+              type="number"
+              min={1}
+              value={formData.durationInMonths || ""}
+              onChange={(e) =>
+                handleChange(
+                  "durationInMonths",
+                  Number(e.target.value)
+                )
+              }
+              placeholder="Duration (months)"
             />
-          </div>
+          )}
 
-          {/* ACTIONS */}
-          <div className="flex justify-end gap-3 pt-5 border-t">
+          <div className="flex justify-end gap-3 pt-4">
             <Button
-              type="submit"
-              className="cursor-pointer"
               variant="outline"
               onClick={onCancel}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
 
             <Button
-              type="submit"
+              onClick={handleSubmit}
               className="cursor-pointer"
-              onClick={handleSave}
-              style={{ background: "var(--financial-income)", color: "white" }}
             >
               Save changes
             </Button>

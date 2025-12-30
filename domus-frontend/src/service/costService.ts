@@ -30,5 +30,20 @@ export const costService = {
   getTotal: async () => {
     const response = await api.get("/costs/total");
     return response.data;
-  }
+  },
+
+  update: async (id: number, data: any) => {
+    return api.put(`/costs/${id}`, {
+      value: data.amount,
+      description: data.description,
+      startDate: data.startDate,
+      category: data.category,
+      frequency: data.frequency,
+      durationInMonths: data.durationInMonths
+    });
+  },
+
+  delete: async (id: number) => {
+    return api.delete(`/costs/${id}`);
+  },
 };

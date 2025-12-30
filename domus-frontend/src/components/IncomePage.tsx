@@ -22,17 +22,6 @@ import { incomeService } from "../service/incomeService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 
-const addOneYear = (dateStr: string) => {
-  const date = new Date(dateStr);
-  date.setFullYear(date.getFullYear() + 1);
-  return date.toISOString().split("T")[0];
-};
-
-const formatDateToISO = (date: string) => {
-  if (!date) return "";
-  return date; // input[type=date] já retorna yyyy-MM-dd
-};
-
 export default function IncomePage() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
