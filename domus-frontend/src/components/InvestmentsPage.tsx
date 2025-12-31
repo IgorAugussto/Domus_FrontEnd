@@ -354,6 +354,7 @@ export default function InvestmentsPage() {
           initialData={editingInvestment}
           onSave={handleEditInvestment}
           onCancel={() => setShowEdit(false)}
+          showFieldsInvestments
         />
       )}
 

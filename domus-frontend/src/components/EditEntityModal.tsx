@@ -25,7 +25,7 @@ interface EditEntityModalProps {
   onCancel: () => void;
   showDurationInMonths?: boolean;
   showExpenseCategories?: boolean;
-  showFieldsImvestments?: boolean;
+  showFieldsInvestments?: boolean;
 }
 
 export function EditEntityModal({
@@ -36,7 +36,7 @@ export function EditEntityModal({
   onCancel,
   showDurationInMonths = false,
   showExpenseCategories = false,
-  showFieldsImvestments = false,
+  showFieldsInvestments = false,
 }: EditEntityModalProps) {
   const [formData, setFormData] = useState<any>({});
 
@@ -65,20 +65,21 @@ export function EditEntityModal({
       durationInMonths: showDurationInMonths
         ? Number(formData.durationInMonths)
         : undefined,
+      expectedReturn: showFieldsInvestments
+        ? Number(formData.expectedReturn)
+        : undefined,
     });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <Card className="w-full max-w-xl shadow-2xl">
-        {/* HEADER */}
         <CardHeader className="border-b">
           <CardTitle className="text-xl font-semibold">{title}</CardTitle>
         </CardHeader>
 
-        {/* CONTENT */}
         <CardContent className="space-y-6 pt-6">
-          {/* AMOUNT + DATE */}
+          {/* AMOUNT + START DATE */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Amount</Label>
@@ -90,7 +91,7 @@ export function EditEntityModal({
             </div>
 
             <div className="space-y-2">
-              <Label>Date</Label>
+              <Label>Start Date</Label>
               <Input
                 type="date"
                 value={formData.startDate || ""}
@@ -99,89 +100,116 @@ export function EditEntityModal({
             </div>
           </div>
 
-          {/* CATEGORY + FREQUENCY */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(v) => handleChange("category", v)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                {showExpenseCategories ? (
-                  <SelectContent className="select-content">
-                    <SelectItem className="select-item" value="Food & Dining">
-                      Food & Dining
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Transportation">
-                      Transportation
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Shopping">
-                      Shopping
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Entertainment">
-                      Entertainment
-                    </SelectItem>
-                    <SelectItem
-                      className="select-item"
-                      value="Bills & Utilities"
-                    >
-                      Bills & Utilities
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Healthcare">
-                      Healthcare
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Education">
-                      Education
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Other">
-                      Other
-                    </SelectItem>
-                  </SelectContent>
-                ) : (
-                  <SelectContent className="select-content">
-                    <SelectItem className="select-item" value="Salary">
-                      Salary
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Freelance">
-                      Freelance
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Bonus">
-                      Bonus
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Investment">
-                      Investment
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Other">
-                      Other
-                    </SelectItem>
-                  </SelectContent>
-                )}
-              </Select>
-            </div>
+          {/* INVESTMENTS ONLY */}
+          {showFieldsInvestments && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Investment Type</Label>
+                  <Select
+                    value={formData.investmentType}
+                    onValueChange={(v) =>
+                      handleChange("investmentType", v)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select investment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ETF">ETF</SelectItem>
+                      <SelectItem value="Stocks">Stocks</SelectItem>
+                      <SelectItem value="Crypto">Crypto</SelectItem>
+                      <SelectItem value="Fixed Income">Fixed Income</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="space-y-2">
-              <Label>Frequency</Label>
-              <Select
-                value={formData.frequency}
-                onValueChange={(v) => handleChange("frequency", v)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem className="select-item" value="One-time">
-                    One-time
-                  </SelectItem>
-                  <SelectItem className="select-item" value="Monthly">
-                    Monthly
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                <div className="space-y-2">
+                  <Label>Expected Return (%)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formData.expectedReturn || ""}
+                    onChange={(e) =>
+                      handleChange("expectedReturn", e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>End Date</Label>
+                <Input
+                  type="date"
+                  value={formData.endDate || ""}
+                  onChange={(e) => handleChange("endDate", e.target.value)}
+                />
+              </div>
+            </>
+          )}
+
+          {/* CATEGORY + FREQUENCY (NOT INVESTMENTS) */}
+          {!showFieldsInvestments && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(v) => handleChange("category", v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+
+                  {showExpenseCategories ? (
+                    <SelectContent>
+                      <SelectItem value="Food & Dining">
+                        Food & Dining
+                      </SelectItem>
+                      <SelectItem value="Transportation">
+                        Transportation
+                      </SelectItem>
+                      <SelectItem value="Shopping">Shopping</SelectItem>
+                      <SelectItem value="Entertainment">
+                        Entertainment
+                      </SelectItem>
+                      <SelectItem value="Bills & Utilities">
+                        Bills & Utilities
+                      </SelectItem>
+                      <SelectItem value="Healthcare">Healthcare</SelectItem>
+                      <SelectItem value="Education">Education</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  ) : (
+                    <SelectContent>
+                      <SelectItem value="Salary">Salary</SelectItem>
+                      <SelectItem value="Freelance">Freelance</SelectItem>
+                      <SelectItem value="Bonus">Bonus</SelectItem>
+                      <SelectItem value="Investment">Investment</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  )}
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Frequency</Label>
+                <Select
+                  value={formData.frequency}
+                  onValueChange={(v) => handleChange("frequency", v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="One-time">One-time</SelectItem>
+                    <SelectItem value="Monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* DESCRIPTION */}
           <div className="space-y-2">
@@ -193,7 +221,7 @@ export function EditEntityModal({
             />
           </div>
 
-          {/* DURATION (ONLY EXPENSES) */}
+          {/* DURATION (EXPENSES ONLY) */}
           {showDurationInMonths && (
             <div className="space-y-2">
               <Label>Duration (months)</Label>
@@ -207,70 +235,6 @@ export function EditEntityModal({
               />
             </div>
           )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Investment Type</Label>
-              <Select
-                value={formData.investmenteType}
-                onValueChange={(v) => handleChange("investmenteType", v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                {showFieldsImvestments && (
-                  <SelectContent className="select-content">
-                    <SelectItem className="select-item" value="Food & Dining">
-                      Food & Dining
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Transportation">
-                      Transportation
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Shopping">
-                      Shopping
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Entertainment">
-                      Entertainment
-                    </SelectItem>
-                    <SelectItem
-                      className="select-item"
-                      value="Bills & Utilities"
-                    >
-                      Bills & Utilities
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Healthcare">
-                      Healthcare
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Education">
-                      Education
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Other">
-                      Other
-                    </SelectItem>
-                  </SelectContent>
-                )}
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Frequency</Label>
-              <Select
-                value={formData.frequency}
-                onValueChange={(v) => handleChange("frequency", v)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem className="select-item" value="One-time">
-                    One-time
-                  </SelectItem>
-                  <SelectItem className="select-item" value="Monthly">
-                    Monthly
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
 
           {/* ACTIONS */}
           <div className="flex justify-end gap-3 pt-5 border-t">
