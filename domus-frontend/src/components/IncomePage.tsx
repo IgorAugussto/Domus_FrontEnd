@@ -21,6 +21,7 @@ import { Plus, Wallet } from "lucide-react";
 import { incomeService } from "../service/incomeService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
+import { FeedbackToast } from "./FeedbackToast";
 
 export default function IncomePage() {
   const [amount, setAmount] = useState("");
@@ -35,6 +36,10 @@ export default function IncomePage() {
   const [showEdit, setShowEdit] = useState(false);
   const [deletingIncome, setDeletingIncome] = useState<any | null>(null);
   const [showDelete, setShowDelete] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   useEffect(() => {
     loadIncomes();
@@ -51,6 +56,16 @@ export default function IncomePage() {
     }
   }, [category]);
 
+  useEffect(() => {
+    if (!toast) return;
+
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   const loadIncomes = async () => {
     try {
       const data = await incomeService.getAll();
@@ -64,7 +79,10 @@ export default function IncomePage() {
     e.preventDefault();
 
     if (!amount || !category || !date) {
-      alert("Preencha todos os campos!");
+      setToast({
+        message: "Preencha todos os campos",
+        type: "error",
+      });
       return;
     }
 
@@ -79,7 +97,10 @@ export default function IncomePage() {
 
       await loadIncomes();
 
-      alert("Income salvo com sucesso!");
+      setToast({
+        message: "Receita salva com sucesso",
+        type: "success",
+      });
 
       // Limpa o formulário
       setAmount("");
@@ -87,8 +108,11 @@ export default function IncomePage() {
       setDescription("");
       setDate(new Date().toISOString().split("T")[0]);
     } catch (error) {
-      console.error("Erro ao salvar income:", error);
-      alert("Erro ao salvar renda. Tente novamente.");
+      console.error("Erro ao salvar receita:", error);
+      setToast({
+        message: "Erro ao salvar receita. Tente novamente.",
+        type: "error",
+      });
     }
   };
 
@@ -367,6 +391,14 @@ export default function IncomePage() {
             setDeletingIncome(null);
             setSelectedIncome(null);
           }}
+        />
+      )}
+
+      {toast && (
+        <FeedbackToast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
       )}
     </div>

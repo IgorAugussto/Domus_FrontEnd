@@ -68,6 +68,9 @@ export function EditEntityModal({
       expectedReturn: showFieldsInvestments
         ? Number(formData.expectedReturn)
         : undefined,
+        typeInvestments: showFieldsInvestments
+      ? formData.typeInvestments
+      : undefined,
     });
   };
 
@@ -107,20 +110,20 @@ export function EditEntityModal({
                 <div className="space-y-2">
                   <Label>Investment Type</Label>
                   <Select
-                    value={formData.investmentType}
+                    value={formData.typeInvestments}
                     onValueChange={(v) =>
-                      handleChange("investmentType", v)
+                      handleChange("typeInvestments", v)
                     }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select investment type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ETF">ETF</SelectItem>
-                      <SelectItem value="Stocks">Stocks</SelectItem>
-                      <SelectItem value="Crypto">Crypto</SelectItem>
-                      <SelectItem value="Fixed Income">Fixed Income</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem className="select-item" value="ETF">ETF</SelectItem>
+                      <SelectItem className="select-item" value="Stocks">Stocks</SelectItem>
+                      <SelectItem className="select-item" value="Crypto">Crypto</SelectItem>
+                      <SelectItem className="select-item" value="Fixed Income">Fixed Income</SelectItem>
+                      <SelectItem className="select-item" value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

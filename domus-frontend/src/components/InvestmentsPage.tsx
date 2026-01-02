@@ -21,6 +21,7 @@ import { Plus, TrendingUp } from "lucide-react";
 import { investmentService } from "../service/investmentService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
+import { FeedbackToast } from "./FeedbackToast";
 
 export default function InvestmentsPage() {
   const [amount, setAmount] = useState("");
@@ -41,10 +42,25 @@ export default function InvestmentsPage() {
     null
   );
   const [showDelete, setShowDelete] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   useEffect(() => {
     loadInvestment();
   }, []);
+
+  useEffect(() => {
+  if (!toast) return;
+
+  const timer = setTimeout(() => {
+    setToast(null);
+  }, 3000);
+
+  return () => clearTimeout(timer);
+}, [toast]);
+
 
   const loadInvestment = async () => {
     try {
@@ -72,7 +88,10 @@ export default function InvestmentsPage() {
 
       await loadInvestment();
 
-      alert("Income salvo com sucesso!");
+      setToast({
+        message: "Despesa salva com sucesso",
+        type: "success",
+      });
 
       // limpa o formulário (apenas visualmente)
       setAmount("");
@@ -82,8 +101,11 @@ export default function InvestmentsPage() {
       setStartDate(new Date().toISOString().split("T")[0]);
       setEndDate(new Date().toISOString().split("T")[0]);
     } catch (err) {
-      console.error("Erro ao salvar income:", err);
-      alert("Erro ao salvar renda. Tente novamente.");
+      console.error("Erro ao salvar investimento:", err);
+      setToast({
+        message: "Preencha todos os campos",
+        type: "error",
+      });
     }
   };
 
@@ -370,6 +392,14 @@ export default function InvestmentsPage() {
             setDeletingInvestment(null);
             setSelectedInvestment(null);
           }}
+        />
+      )}
+
+      {toast && (
+        <FeedbackToast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
       )}
     </div>

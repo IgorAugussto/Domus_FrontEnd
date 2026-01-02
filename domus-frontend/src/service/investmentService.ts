@@ -42,7 +42,7 @@ export const investmentService = {
         startDate: data.startDate,
         endDate: data.endDate,
         category: data.category,
-        typeInvestments: data.type,
+        typeInvestments: data.typeInvestments,
         expectedReturn: data.expectedReturn
       });
     },

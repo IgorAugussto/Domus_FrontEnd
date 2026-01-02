@@ -21,6 +21,7 @@ import { DollarSign, Plus } from "lucide-react";
 import { costService } from "../service/costService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
+import { FeedbackToast } from "./FeedbackToast";
 
 const formatDateToISO = (date: string) => {
   if (!date) return "";
@@ -41,10 +42,24 @@ export default function ExpensesPage() {
   const [showEdit, setShowEdit] = useState(false);
   const [deletingCost, setDeletingCost] = useState<any | null>(null);
   const [showDelete, setShowDelete] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   useEffect(() => {
     loadCosts();
   }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const loadCosts = async () => {
     try {
@@ -80,7 +95,10 @@ export default function ExpensesPage() {
 
       await loadCosts();
 
-      alert("Income salvo com sucesso!");
+      setToast({
+        message: "Receita salva com sucesso",
+        type: "success",
+      });
 
       // Limpa o formulário
       setAmount("");
@@ -88,8 +106,11 @@ export default function ExpensesPage() {
       setDescription("");
       setDate(new Date().toISOString().split("T")[0]);
     } catch (error) {
-      console.error("Erro ao salvar income:", error);
-      alert("Erro ao salvar renda. Tente novamente.");
+      console.error("Erro ao salvar despesa:", error);
+      setToast({
+        message: "Preencha todos os campos",
+        type: "error",
+      });
     }
   };
 
@@ -417,6 +438,14 @@ export default function ExpensesPage() {
             setDeletingCost(null);
             setSelectedCost(null);
           }}
+        />
+      )}
+
+      {toast && (
+        <FeedbackToast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
       )}
     </div>
