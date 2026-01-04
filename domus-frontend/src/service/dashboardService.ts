@@ -1,4 +1,4 @@
-import api from '../lib/api';
+import api from "../lib/api";
 
 export interface MonthlyProjection {
   month: string;
@@ -9,7 +9,7 @@ export interface MonthlyProjection {
 
 // Tipos usados no gráfico
 export interface YearlyProjection {
-  period: string;        // "2025-01" ou "2025-01-15"
+  period: string; // "2025-01" ou "2025-01-15"
   income: number;
   expenses: number;
   investments: number;
@@ -21,7 +21,7 @@ export const dashboardService = {
     return response.data;
   },
 
-   // 🔥 NOVO MÉTODO
+  // 🔥 NOVO MÉTODO
   getMonthlyProjection: async (): Promise<MonthlyProjection[]> => {
     const response = await api.get("/dashboard/projection/month");
     return response.data;
@@ -29,6 +29,13 @@ export const dashboardService = {
 
   getYearlyProjection: async (): Promise<YearlyProjection[]> => {
     const response = await api.get("/dashboard/projection/year");
+    return response.data;
+  },
+
+  getMonthlySummary: async (month: string) => {
+    const response = await api.get("/dashboard/summary/monthly", {
+      params: { month },
+    });
     return response.data;
   },
 };

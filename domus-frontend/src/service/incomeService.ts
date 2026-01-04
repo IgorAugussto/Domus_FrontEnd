@@ -27,7 +27,7 @@ export const incomeService = {
 
   getAll: async () => {
     const response = await api.get("/income");
-    return response.data; // 👈 AQUI ESTAVA O ERRO DO DASHBOARD
+    return response.data;
   },
 
   getTotal: async () => {

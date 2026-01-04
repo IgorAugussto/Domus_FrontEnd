@@ -24,6 +24,7 @@ import {
   Wallet,
   Target,
 } from "lucide-react";
+import dayjs from "dayjs";
 import type { Cost } from "../service/costService";
 import type { Income } from "../service/incomeService";
 import type { Investment } from "../service/investmentService";
@@ -49,6 +50,14 @@ export function DashboardPage() {
   const [monthlyData, setMonthlyData] = useState<MonthlyProjection[]>([]);
   const [yearlyData, setYearlyData] = useState<YearlyProjection[]>([]);
   const [activeTab, setActiveTab] = useState<"GERAL" | "MENSAL">("GERAL");
+  const [selectedMonth, setSelectedMonth] = useState<string>(
+    dayjs().format("YYYY-MM")
+  );
+  const [kpiIncome, setKpiIncome] = useState(0);
+  const [kpiExpenses, setKpiExpenses] = useState(0);
+  const [kpiInvestments, setKpiInvestments] = useState(0);
+  const [kpiNetWorth, setKpiNetWorth] = useState(0);
+  const [kpiSavingsRate, setKpiSavingsRate] = useState<number>(0);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -85,21 +94,15 @@ export function DashboardPage() {
         setInvestments(investmentData);
 
         /* ============================
-         KPIs DO TOPO
-      ============================ */
-        setTotalIncome(totalIncomeValue);
-        setTotalCost(totalCostValue);
-        setTotalInvestments(totalInvestmentValue);
-
-        setInvestmentGains(Number(dashboardSummary.investmentGains));
-        setNetWorth(Number(dashboardSummary.netWorth));
-        setSavingsRate(dashboardSummary.savingsRate.toString());
-
-        /* ============================
          DADOS DOS GRÁFICOS
       ============================ */
-        setMonthlyData(monthlyProjectionData); // TAB MENSAL
-        setYearlyData(yearlyProjectionData); // TAB GERAL
+        setMonthlyData(monthlyProjectionData);
+        setYearlyData(yearlyProjectionData);
+
+        /* ============================
+         🔥 KPIs MENSAIS (NOVO)
+      ============================ */
+        await loadMonthlySummary(selectedMonth);
       } catch (err) {
         console.error("Erro ao carregar dados do dashboard:", err);
       } finally {
@@ -110,6 +113,35 @@ export function DashboardPage() {
     loadDashboardData();
   }, []);
 
+  useEffect(() => {
+    if (!selectedMonth) return;
+
+    const loadMonthlySummary = async () => {
+      try {
+        const data = await dashboardService.getMonthlySummary(selectedMonth);
+
+        setKpiIncome(Number(data.income));
+        setKpiExpenses(Number(data.expenses));
+        setKpiInvestments(Number(data.investments));
+        setKpiNetWorth(Number(data.netWorth));
+        setKpiSavingsRate(Number(data.savingsRate));
+      } catch (error) {
+        console.error("Erro ao carregar resumo mensal:", error);
+      }
+    };
+
+    loadMonthlySummary();
+  }, [selectedMonth]);
+
+  /* ============================
+     CLIQUE NO GRÁFICO
+  ============================ */
+
+  const handleMonthClick = (month: string) => {
+    if (activeTab !== "GERAL") return;
+    setSelectedMonth(month);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -118,11 +150,19 @@ export function DashboardPage() {
     );
   }
 
-  //const investmentGains = totalInvestments * 0.057;
-  //const netWorth = totalIncome - totalCost + totalInvestments + investmentGains;
-  //const netIncome = totalIncome - totalCost;
-  //const savingsRate =
-  //totalIncome > 0 ? ((netIncome / totalIncome) * 100).toFixed(1) : "0";
+  const loadMonthlySummary = async (month: string) => {
+    try {
+      const { data } = await dashboardService.getMonthlySummary(month);
+
+      setKpiIncome(Number(data.income));
+      setKpiExpenses(Number(data.expenses));
+      setKpiInvestments(Number(data.investments));
+      setKpiNetWorth(Number(data.netWorth));
+      setKpiSavingsRate(Number(data.savingsRate));
+    } catch (err) {
+      console.error("Erro ao carregar resumo mensal", err);
+    }
+  };
 
   // Categorias de despesas
   const categoryTotals: Record<string, number> = {};
@@ -194,6 +234,21 @@ export function DashboardPage() {
 
   const chartData = activeTab === "GERAL" ? yearlyData : monthlyData;
 
+  const ClickableMonthTick = ({ x, y, payload }: any) => {
+    return (
+      <text
+        x={x}
+        y={y + 10}
+        textAnchor="middle"
+        fill="var(--muted-foreground)"
+        style={{ cursor: "pointer" }}
+        onClick={() => handleMonthClick(payload.value)}
+      >
+        {payload.value}
+      </text>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -238,10 +293,9 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-success)" }}
             >
-              {totalIncome.toLocaleString("pt-BR", {
+              {kpiIncome.toLocaleString("pt-BR", {
                 style: "currency",
                 currency: "BRL",
-                minimumFractionDigits: 2,
               })}
             </div>
             <p
@@ -277,10 +331,9 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-danger)" }}
             >
-              {totalCost.toLocaleString("pt-BR", {
+              {kpiExpenses.toLocaleString("pt-BR", {
                 style: "currency",
                 currency: "BRL",
-                minimumFractionDigits: 2,
               })}
             </div>
             <p
@@ -316,10 +369,9 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-investment)" }}
             >
-              {totalInvestments.toLocaleString("pt-BR", {
+              {kpiInvestments.toLocaleString("pt-BR", {
                 style: "currency",
                 currency: "BRL",
-                minimumFractionDigits: 2,
               })}
             </div>
             <p
@@ -355,17 +407,16 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-trust)" }}
             >
-              {netWorth.toLocaleString("pt-BR", {
+              {kpiNetWorth.toLocaleString("pt-BR", {
                 style: "currency",
                 currency: "BRL",
-                minimumFractionDigits: 2,
               })}
             </div>
             <p
               className="text-xs mt-1"
               style={{ color: "var(--financial-trust)" }}
             >
-              Savings Rate: {savingsRate}%
+              Savings Rate: {kpiSavingsRate}%
             </p>
           </CardContent>
         </Card>
@@ -404,10 +455,30 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={chartData}>
+              <AreaChart
+                data={chartData}
+                onClick={(state: any) => {
+                  // 🔒 Só permite clique no modo GERAL
+                  if (activeTab !== "GERAL") return;
+
+                  const payload = state?.activePayload?.[0]?.payload;
+                  if (!payload?.month) return;
+
+                  setSelectedMonth(payload.month);
+                  loadMonthlySummary(payload.month);
+                }}
+              >
                 <CartesianGrid stroke="var(--border)" />
-                <XAxis dataKey="month" stroke="var(--muted-foreground)" />
+
+                <XAxis
+  dataKey="month"
+  stroke="var(--muted-foreground)"
+  tick={<ClickableMonthTick />}
+/>
+
+
                 <YAxis stroke="var(--muted-foreground)" />
+
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "var(--card)",
@@ -424,6 +495,7 @@ export function DashboardPage() {
                     name,
                   ]}
                 />
+
                 <Area
                   type="monotone"
                   dataKey="income"
@@ -432,6 +504,7 @@ export function DashboardPage() {
                   fill="var(--chart-1)"
                   fillOpacity={0.6}
                 />
+
                 <Area
                   type="monotone"
                   dataKey="expenses"
@@ -440,6 +513,7 @@ export function DashboardPage() {
                   fill="var(--chart-2)"
                   fillOpacity={0.6}
                 />
+
                 <Area
                   type="monotone"
                   dataKey="investments"
