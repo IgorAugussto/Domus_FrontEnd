@@ -269,10 +269,10 @@ export default function ExpensesPage() {
                     <SelectValue placeholder="Select frequency" />
                   </SelectTrigger>
                   <SelectContent className="select-content">
-                    {/*<SelectItem className="select-item" value="One-time">
+                    <SelectItem className="select-item" value="One-time">
                       One-time
                     </SelectItem>
-                    <SelectItem className="select-item" value="Weekly">
+                    {/*<SelectItem className="select-item" value="Weekly">
                       Weekly
                     </SelectItem>
                     <SelectItem className="select-item" value="Bi-weekly">
