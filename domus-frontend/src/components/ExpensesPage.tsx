@@ -19,6 +19,14 @@ import {
 import { Textarea } from "../ui-components/textArea";
 import { DollarSign, Plus } from "lucide-react";
 import { costService } from "../service/costService";
+import { EditEntityModal } from "./EditEntityModal";
+import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
+import { FeedbackToast } from "./FeedbackToast";
+
+const formatDateToISO = (date: string) => {
+  if (!date) return "";
+  return date; // input[type=date] já retorna yyyy-MM-dd
+};
 
 export default function ExpensesPage() {
   const [amount, setAmount] = useState("");
@@ -27,10 +35,31 @@ export default function ExpensesPage() {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [costs, setCosts] = useState<any[]>([]);
   const [frequency, setFrequency] = useState("");
+  const [duration, setDuration] = useState<number | null>(null);
+  const [showDurationInput, setShowDurationInput] = useState(false);
+  const [selectedCost, setSelectedCost] = useState<any>(null);
+  const [editingCost, setEditingCost] = useState<any | null>(null);
+  const [showEdit, setShowEdit] = useState(false);
+  const [deletingCost, setDeletingCost] = useState<any | null>(null);
+  const [showDelete, setShowDelete] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   useEffect(() => {
     loadCosts();
   }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const loadCosts = async () => {
     try {
@@ -49,18 +78,27 @@ export default function ExpensesPage() {
       return;
     }
 
+    if (frequency !== "One-time" && !duration) {
+      alert("Informe a duração para despesas recorrentes");
+      return;
+    }
+
     try {
       await costService.create({
         description: description || `${category}`,
         amount: Number(amount),
-        date,
+        startDate: formatDateToISO(date),
         category,
         frequency,
+        durationInMonths: frequency === "One-time" ? 1 : duration,
       });
 
       await loadCosts();
 
-      alert("Income salvo com sucesso!");
+      setToast({
+        message: "Receita salva com sucesso",
+        type: "success",
+      });
 
       // Limpa o formulário
       setAmount("");
@@ -68,8 +106,50 @@ export default function ExpensesPage() {
       setDescription("");
       setDate(new Date().toISOString().split("T")[0]);
     } catch (error) {
-      console.error("Erro ao salvar income:", error);
-      alert("Erro ao salvar renda. Tente novamente.");
+      console.error("Erro ao salvar despesa:", error);
+      setToast({
+        message: "Preencha todos os campos",
+        type: "error",
+      });
+    }
+  };
+
+  const handleFrequencyChange = (value: string) => {
+    setFrequency(value);
+
+    if (value === "One-time") {
+      setDuration(1);
+      setShowDurationInput(false);
+    } else {
+      setDuration(null);
+      setShowDurationInput(true);
+    }
+  };
+
+  const handleDeleteCost = async () => {
+    if (!selectedCost) return;
+
+    try {
+      await costService.delete(selectedCost.id);
+      await loadCosts();
+      setShowDelete(false);
+    } catch (error) {
+      console.error("Erro ao deletar cost:", error);
+      alert("Erro ao deletar renda.");
+    }
+  };
+
+  const handleEditCost = async (data: any) => {
+    if (!editingCost) return;
+
+    try {
+      await costService.update(editingCost.id, data);
+      await loadCosts();
+      setShowEdit(false);
+      setEditingCost(null);
+    } catch (error) {
+      console.error("Erro ao editar cost:", error);
+      alert("Erro ao editar cost.");
     }
   };
 
@@ -181,9 +261,10 @@ export default function ExpensesPage() {
                   </SelectContent>
                 </Select>
               </div>
+              {/* FREQUENCY */}
               <div className="space-y-2">
                 <Label htmlFor="frequency">Frequency</Label>
-                <Select value={frequency} onValueChange={setFrequency}>
+                <Select value={frequency} onValueChange={handleFrequencyChange}>
                   <SelectTrigger className="select-trigger">
                     <SelectValue placeholder="Select frequency" />
                   </SelectTrigger>
@@ -191,24 +272,46 @@ export default function ExpensesPage() {
                     <SelectItem className="select-item" value="One-time">
                       One-time
                     </SelectItem>
-                    <SelectItem className="select-item" value="Weekly">
+                    {/*<SelectItem className="select-item" value="Weekly">
                       Weekly
                     </SelectItem>
                     <SelectItem className="select-item" value="Bi-weekly">
                       Bi-weekly
-                    </SelectItem>
+                    </SelectItem>*/}
                     <SelectItem className="select-item" value="Monthly">
                       Monthly
                     </SelectItem>
-                    <SelectItem className="select-item" value="Quarterly">
+                    {/*<SelectItem className="select-item" value="Quarterly">
                       Quarterly
                     </SelectItem>
                     <SelectItem className="select-item" value="Annually">
                       Annually
-                    </SelectItem>
+                    </SelectItem>*/}
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* 🔥 DURATION (ENTRA AQUI, LOGO ABAIXO) */}
+              {showDurationInput && (
+                <div className="space-y-2">
+                  <Label htmlFor="duration">
+                    {frequency === "Weekly" && "Number of weeks"}
+                    {frequency === "Bi-weekly" && "Number of bi-weekly periods"}
+                    {frequency === "Monthly" && "Number of months"}
+                    {frequency === "Quarterly" && "Number of quarters"}
+                    {frequency === "Annually" && "Number of years"}
+                  </Label>
+
+                  <Input
+                    id="duration"
+                    type="number"
+                    min={1}
+                    value={duration ?? ""}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    required
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -263,21 +366,88 @@ export default function ExpensesPage() {
                     background: "var(--card)",
                   }}
                 >
-                  <div className="flex justify-between">
-                    <span>
-                      {inc.description} - {inc.frequency}
-                    </span>
-                    <strong style={{ color: "var(--financial-danger)" }}>
-                      ${inc.value}
-                    </strong>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span>
+                        {inc.description} - {inc.frequency}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <strong style={{ color: "var(--financial-danger)" }}>
+                        ${inc.value}
+                      </strong>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingCost(inc);
+                          setShowEdit(true);
+                        }}
+                        className="hover:opacity-70 cursor-pointer"
+                        title="Edit outgoing"
+                      >
+                        ✏️
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeletingCost(inc);
+                          setSelectedCost(inc);
+                          setShowDelete(true);
+                        }}
+                        className="hover:opacity-70 cursor-pointer"
+                        title="Delete outgoing"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">{inc.date}</p>
                 </li>
               ))}
             </ul>
           )}
         </CardContent>
       </Card>
+
+      {/* MODAL EDIT */}
+      {editingCost && (
+        <EditEntityModal
+          open={showEdit}
+          title="Edit expense"
+          initialData={editingCost}
+          showDurationInMonths={true}
+          showExpenseCategories={true}
+          onSave={handleEditCost}
+          onCancel={() => {
+            setShowEdit(false);
+            setEditingCost(null);
+          }}
+        />
+      )}
+      {/* MODAL DELETE */}
+      {deletingCost && (
+        <DeleteConfirmModal
+          open={showDelete}
+          title="Delete Cost?"
+          description="This action cannot be undone. This Cost will be permanently removed."
+          onConfirm={handleDeleteCost}
+          onCancel={() => {
+            setShowDelete(false);
+            setDeletingCost(null);
+            setSelectedCost(null);
+          }}
+        />
+      )}
+
+      {toast && (
+        <FeedbackToast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

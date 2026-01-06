@@ -5,7 +5,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui-components/card";
-import { Progress } from "../ui-components/progress";
 import {
   PieChart,
   Pie,
@@ -24,8 +23,8 @@ import {
   DollarSign,
   Wallet,
   Target,
-  AlertCircle,
 } from "lucide-react";
+import dayjs from "dayjs";
 import type { Cost } from "../service/costService";
 import type { Income } from "../service/incomeService";
 import type { Investment } from "../service/investmentService";
@@ -34,6 +33,8 @@ import { incomeService } from "../service/incomeService";
 import { investmentService } from "../service/investmentService";
 import { dashboardService } from "../service/dashboardService";
 import { useState, useEffect } from "react";
+import type { MonthlyProjection } from "../service/dashboardService";
+import type { YearlyProjection } from "../service/dashboardService";
 
 export function DashboardPage() {
   const [costs, setCosts] = useState<Cost[]>([]);
@@ -45,17 +46,18 @@ export function DashboardPage() {
   const [investmentGains, setInvestmentGains] = useState(0);
   const [netWorth, setNetWorth] = useState(0);
   const [savingsRate, setSavingsRate] = useState("0");
-
-  const [monthlyData, setMonthlyData] = useState<
-    Array<{
-      month: string;
-      income: number;
-      expenses: number;
-      investments: number;
-    }>
-  >([]);
-
   const [loading, setLoading] = useState(true);
+  const [monthlyData, setMonthlyData] = useState<MonthlyProjection[]>([]);
+  const [yearlyData, setYearlyData] = useState<YearlyProjection[]>([]);
+  const [activeTab, setActiveTab] = useState<"GERAL" | "MENSAL">("GERAL");
+  const [selectedMonth, setSelectedMonth] = useState<string>(
+    dayjs().format("YYYY-MM")
+  );
+  const [kpiIncome, setKpiIncome] = useState(0);
+  const [kpiExpenses, setKpiExpenses] = useState(0);
+  const [kpiInvestments, setKpiInvestments] = useState(0);
+  const [kpiNetWorth, setKpiNetWorth] = useState(0);
+  const [kpiSavingsRate, setKpiSavingsRate] = useState<number>(0);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -70,6 +72,8 @@ export function DashboardPage() {
           totalCostValue,
           totalInvestmentValue,
           dashboardSummary,
+          monthlyProjectionData,
+          yearlyProjectionData,
         ] = await Promise.all([
           costService.getAll(),
           incomeService.getAll(),
@@ -78,88 +82,29 @@ export function DashboardPage() {
           costService.getTotal(),
           investmentService.getTotal(),
           dashboardService.getSummary(),
+          dashboardService.getMonthlyProjection(), // TAB MENSAL
+          dashboardService.getYearlyProjection(), // TAB GERAL
         ]);
 
+        /* ============================
+         LISTAS BASE
+      ============================ */
         setCosts(costData);
         setIncomes(incomeData);
         setInvestments(investmentData);
 
-        setTotalIncome(totalIncomeValue);
-        setTotalCost(totalCostValue);
-        setTotalInvestments(totalInvestmentValue);
+        /* ============================
+         DADOS DOS GRÁFICOS
+      ============================ */
+        setMonthlyData(monthlyProjectionData);
+        setYearlyData(yearlyProjectionData);
 
-        setInvestmentGains(Number(dashboardSummary.investmentGains));
-        setNetWorth(Number(dashboardSummary.netWorth));
-        setSavingsRate(dashboardSummary.savingsRate.toString());
-
-        // Cálculo do histórico mensal 100% real
-        const monthlyMap = new Map<
-          string,
-          { income: number; expenses: number; investments: number }
-        >();
-
-        const getMonthKey = (dateStr: string): string => {
-          const date = new Date(dateStr);
-          return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-            2,
-            "0"
-          )}`;
-        };
-
-        incomeData.forEach((i: Income) => {
-          const key = getMonthKey(i.date);
-          const current = monthlyMap.get(key) || {
-            income: 0,
-            expenses: 0,
-            investments: 0,
-          };
-          current.income += Number(i.value);
-          monthlyMap.set(key, current);
-        });
-
-        costData.forEach((c: Cost) => {
-          const key = getMonthKey(c.date);
-          const current = monthlyMap.get(key) || {
-            income: 0,
-            expenses: 0,
-            investments: 0,
-          };
-          current.expenses += Number(c.value);
-          monthlyMap.set(key, current);
-        });
-
-        investmentData.forEach((inv: Investment) => {
-          const key = getMonthKey(inv.date);
-          const current = monthlyMap.get(key) || {
-            income: 0,
-            expenses: 0,
-            investments: 0,
-          };
-          current.investments += inv.value;
-          monthlyMap.set(key, current);
-        });
-
-        const sortedData = Array.from(monthlyMap.entries())
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([key, value]) => {
-            const [year, month] = key.split("-");
-            const monthName = new Date(
-              parseInt(year),
-              parseInt(month) - 1
-            ).toLocaleString("en-US", {
-              month: "short",
-            });
-            return {
-              month: monthName,
-              income: Number(value.income.toFixed(2)),
-              expenses: Number(value.expenses.toFixed(2)),
-              investments: Number(value.investments.toFixed(2)),
-            };
-          });
-
-        setMonthlyData(sortedData);
+        /* ============================
+         🔥 KPIs MENSAIS (NOVO)
+      ============================ */
+        await loadMonthlySummary(selectedMonth);
       } catch (err) {
-        console.error("Erro ao carregar dados:", err);
+        console.error("Erro ao carregar dados do dashboard:", err);
       } finally {
         setLoading(false);
       }
@@ -167,6 +112,35 @@ export function DashboardPage() {
 
     loadDashboardData();
   }, []);
+
+  useEffect(() => {
+    if (!selectedMonth) return;
+
+    const loadMonthlySummary = async () => {
+      try {
+        const data = await dashboardService.getMonthlySummary(selectedMonth);
+
+        setKpiIncome(Number(data.income));
+        setKpiExpenses(Number(data.expenses));
+        setKpiInvestments(Number(data.investments));
+        setKpiNetWorth(Number(data.netWorth));
+        setKpiSavingsRate(Number(data.savingsRate));
+      } catch (error) {
+        console.error("Erro ao carregar resumo mensal:", error);
+      }
+    };
+
+    loadMonthlySummary();
+  }, [selectedMonth]);
+
+  /* ============================
+     CLIQUE NO GRÁFICO
+  ============================ */
+
+  const handleMonthClick = (month: string) => {
+    if (activeTab !== "GERAL") return;
+    setSelectedMonth(month);
+  };
 
   if (loading) {
     return (
@@ -176,11 +150,19 @@ export function DashboardPage() {
     );
   }
 
-  //const investmentGains = totalInvestments * 0.057;
-  //const netWorth = totalIncome - totalCost + totalInvestments + investmentGains;
-  //const netIncome = totalIncome - totalCost;
-  //const savingsRate =
-  //totalIncome > 0 ? ((netIncome / totalIncome) * 100).toFixed(1) : "0";
+  const loadMonthlySummary = async (month: string) => {
+    try {
+      const { data } = await dashboardService.getMonthlySummary(month);
+
+      setKpiIncome(Number(data.income));
+      setKpiExpenses(Number(data.expenses));
+      setKpiInvestments(Number(data.investments));
+      setKpiNetWorth(Number(data.netWorth));
+      setKpiSavingsRate(Number(data.savingsRate));
+    } catch (err) {
+      console.error("Erro ao carregar resumo mensal", err);
+    }
+  };
 
   // Categorias de despesas
   const categoryTotals: Record<string, number> = {};
@@ -241,11 +223,55 @@ export function DashboardPage() {
     }
   );
 
-  const expectedReturnAverage = totalInvestments > 0? investments.reduce((acc, inv) => {
-      return acc + Number(inv.value) * (Number(inv.expectedReturn) / 100);
-  }, 0) / totalInvestments * 100 : 0;
+  const expectedReturnAverage =
+    totalInvestments > 0
+      ? (investments.reduce((acc, inv) => {
+          return acc + Number(inv.value) * (Number(inv.expectedReturn) / 100);
+        }, 0) /
+          totalInvestments) *
+        100
+      : 0;
 
+  const chartData = activeTab === "GERAL" ? yearlyData : monthlyData;
 
+  const ClickableMonthTick = ({ x, y, payload }: any) => {
+    const isActive = payload.value === selectedMonth;
+
+    const width = 64;
+    const height = 26;
+    const rx = 8;
+
+    return (
+      <g
+        transform={`translate(${x - width / 2}, ${y})`}
+        style={{ cursor: "pointer" }}
+        onClick={() => handleMonthClick(payload.value)}
+      >
+        {/* Fundo do "botão" */}
+        <rect
+          width={width}
+          height={height}
+          rx={rx}
+          ry={rx}
+          fill={isActive ? "var(--financial-trust)" : "var(--card)"}
+          stroke={isActive ? "var(--financial-trust)" : "var(--border)"}
+          strokeWidth={1}
+        />
+
+        {/* Texto */}
+        <text
+          x={width / 2}
+          y={height / 2 + 4}
+          textAnchor="middle"
+          fill={isActive ? "#fff" : "var(--muted-foreground)"}
+          fontSize={12}
+          fontWeight={isActive ? "600" : "400"}
+        >
+          {payload.value}
+        </text>
+      </g>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -291,9 +317,9 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-success)" }}
             >
-              $
-              {totalIncome.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
+              {kpiIncome.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
               })}
             </div>
             <p
@@ -329,7 +355,10 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-danger)" }}
             >
-              ${totalCost.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              {kpiExpenses.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
             </div>
             <p
               className="text-xs mt-1"
@@ -364,16 +393,17 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-investment)" }}
             >
-              $
-              {(totalInvestments + investmentGains).toLocaleString("en-US", {
-                minimumFractionDigits: 2,
+              {kpiInvestments.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
               })}
             </div>
             <p
               className="text-xs mt-1"
-              style={{ color: "var(--financial-success)" }}>
-              <TrendingUp className="h-3 w-3 inline mr-1" />
-              +{expectedReturnAverage.toFixed(2)}% expected return
+              style={{ color: "var(--financial-success)" }}
+            >
+              <TrendingUp className="h-3 w-3 inline mr-1" />+
+              {expectedReturnAverage.toFixed(2)}% expected return
             </p>
           </CardContent>
         </Card>
@@ -401,16 +431,39 @@ export function DashboardPage() {
               className="text-2xl font-bold"
               style={{ color: "var(--financial-trust)" }}
             >
-              ${netWorth.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              {kpiNetWorth.toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              })}
             </div>
             <p
               className="text-xs mt-1"
               style={{ color: "var(--financial-trust)" }}
             >
-              Savings Rate: {savingsRate}%
+              Savings Rate: {kpiSavingsRate}%
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="dashboard-tabs">
+        <button
+          className={`dashboard-tab ${
+            activeTab === "GERAL" ? "active" : "tab"
+          }`}
+          onClick={() => setActiveTab("GERAL")}
+        >
+          Geral
+        </button>
+
+        <button
+          className={`dashboard-tab ${
+            activeTab === "MENSAL" ? "active" : "tab"
+          }`}
+          onClick={() => setActiveTab("MENSAL")}
+        >
+          Mensal
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
@@ -419,22 +472,53 @@ export function DashboardPage() {
         >
           <CardHeader>
             <CardTitle style={{ color: "var(--card-foreground)" }}>
-              Monthly Financial Trends
+              {activeTab === "GERAL"
+                ? "Yearly Financial Trends"
+                : "Monthly Financial Trends"}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={monthlyData}>
+              <AreaChart
+                data={chartData}
+                onClick={(state: any) => {
+                  // 🔒 Só permite clique no modo GERAL
+                  if (activeTab !== "GERAL") return;
+
+                  const payload = state?.activePayload?.[0]?.payload;
+                  if (!payload?.month) return;
+
+                  setSelectedMonth(payload.month);
+                  loadMonthlySummary(payload.month);
+                }}
+              >
                 <CartesianGrid stroke="var(--border)" />
-                <XAxis dataKey="month" stroke="var(--muted-foreground)" />
+
+                <XAxis
+                  dataKey="month"
+                  stroke="var(--muted-foreground)"
+                  tick={<ClickableMonthTick />}
+                />
+
                 <YAxis stroke="var(--muted-foreground)" />
+
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "var(--card)",
                     borderColor: "var(--border)",
                     color: "var(--card-foreground)",
                   }}
+                  formatter={(value: number, name: string) => [
+                    value.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }),
+                    name,
+                  ]}
                 />
+
                 <Area
                   type="monotone"
                   dataKey="income"
@@ -443,6 +527,7 @@ export function DashboardPage() {
                   fill="var(--chart-1)"
                   fillOpacity={0.6}
                 />
+
                 <Area
                   type="monotone"
                   dataKey="expenses"
@@ -451,6 +536,7 @@ export function DashboardPage() {
                   fill="var(--chart-2)"
                   fillOpacity={0.6}
                 />
+
                 <Area
                   type="monotone"
                   dataKey="investments"
@@ -472,8 +558,6 @@ export function DashboardPage() {
             )}
           </CardContent>
         </Card>
-
-        
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

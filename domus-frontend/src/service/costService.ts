@@ -4,8 +4,10 @@ export interface Cost {
   id: string;
   description: string;
   value: number;
-  date: string;
-  category?: string;
+  startDate: string;
+  category: string;
+  frequency: string;
+  durationInMonths: number;
 }
 
 export const costService = {
@@ -13,9 +15,10 @@ export const costService = {
     return api.post("/costs", {
       value: data.amount,
       description: data.description,
-      date: data.date,
+      startDate: data.startDate,
       category: data.category,
-      frequency: data.frequency
+      frequency: data.frequency,
+      durationInMonths: data.durationInMonths
     });
   },
 
@@ -27,5 +30,20 @@ export const costService = {
   getTotal: async () => {
     const response = await api.get("/costs/total");
     return response.data;
-  }
+  },
+
+  update: async (id: number, data: any) => {
+    return api.put(`/costs/${id}`, {
+      value: data.amount,
+      description: data.description,
+      startDate: data.startDate,
+      category: data.category,
+      frequency: data.frequency,
+      durationInMonths: data.durationInMonths
+    });
+  },
+
+  delete: async (id: number) => {
+    return api.delete(`/costs/${id}`);
+  },
 };

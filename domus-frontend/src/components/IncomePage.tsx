@@ -19,6 +19,9 @@ import {
 } from "../ui-components/card";
 import { Plus, Wallet } from "lucide-react";
 import { incomeService } from "../service/incomeService";
+import { EditEntityModal } from "./EditEntityModal";
+import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
+import { FeedbackToast } from "./FeedbackToast";
 
 export default function IncomePage() {
   const [amount, setAmount] = useState("");
@@ -27,10 +30,41 @@ export default function IncomePage() {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [incomes, setIncomes] = useState<any[]>([]);
   const [frequency, setFrequency] = useState("");
+  const [autoFilled, setAutoFilled] = useState(false);
+  const [selectedIncome, setSelectedIncome] = useState<any>(null);
+  const [editingIncome, setEditingIncome] = useState<any | null>(null);
+  const [showEdit, setShowEdit] = useState(false);
+  const [deletingIncome, setDeletingIncome] = useState<any | null>(null);
+  const [showDelete, setShowDelete] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   useEffect(() => {
     loadIncomes();
   }, []);
+
+  useEffect(() => {
+    if (category === "Salary" && !autoFilled) {
+      setFrequency("Monthly");
+      setAutoFilled(true);
+    }
+
+    if (category !== "Salary") {
+      setAutoFilled(false);
+    }
+  }, [category]);
+
+  useEffect(() => {
+    if (!toast) return;
+
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const loadIncomes = async () => {
     try {
@@ -45,7 +79,10 @@ export default function IncomePage() {
     e.preventDefault();
 
     if (!amount || !category || !date) {
-      alert("Preencha todos os campos!");
+      setToast({
+        message: "Preencha todos os campos",
+        type: "error",
+      });
       return;
     }
 
@@ -53,14 +90,17 @@ export default function IncomePage() {
       await incomeService.create({
         description: description || `${category}`,
         amount: Number(amount),
-        date,
         category,
         frequency,
+        startDate: date,
       });
 
       await loadIncomes();
 
-      alert("Income salvo com sucesso!");
+      setToast({
+        message: "Receita salva com sucesso",
+        type: "success",
+      });
 
       // Limpa o formulário
       setAmount("");
@@ -68,8 +108,38 @@ export default function IncomePage() {
       setDescription("");
       setDate(new Date().toISOString().split("T")[0]);
     } catch (error) {
-      console.error("Erro ao salvar income:", error);
-      alert("Erro ao salvar renda. Tente novamente.");
+      console.error("Erro ao salvar receita:", error);
+      setToast({
+        message: "Erro ao salvar receita. Tente novamente.",
+        type: "error",
+      });
+    }
+  };
+
+  const handleDeleteIncome = async () => {
+    if (!selectedIncome) return;
+
+    try {
+      await incomeService.delete(selectedIncome.id);
+      await loadIncomes();
+      setShowDelete(false);
+    } catch (error) {
+      console.error("Erro ao deletar income:", error);
+      alert("Erro ao deletar renda.");
+    }
+  };
+
+  const handleEditIncome = async (data: any) => {
+    if (!editingIncome) return;
+
+    try {
+      await incomeService.update(editingIncome.id, data);
+      await loadIncomes();
+      setShowEdit(false);
+      setEditingIncome(null);
+    } catch (error) {
+      console.error("Erro ao editar income:", error);
+      alert("Erro ao editar income.");
     }
   };
 
@@ -184,21 +254,21 @@ export default function IncomePage() {
                     <SelectItem className="select-item" value="One-time">
                       One-time
                     </SelectItem>
-                    <SelectItem className="select-item" value="Weekly">
+                    {/* <SelectItem className="select-item" value="Weekly">
                       Weekly
                     </SelectItem>
                     <SelectItem className="select-item" value="Bi-weekly">
                       Bi-weekly
-                    </SelectItem>
+                    </SelectItem>*/}
                     <SelectItem className="select-item" value="Monthly">
                       Monthly
                     </SelectItem>
-                    <SelectItem className="select-item" value="Quarterly">
+                    {/*<SelectItem className="select-item" value="Quarterly">
                       Quarterly
                     </SelectItem>
                     <SelectItem className="select-item" value="Annually">
                       Annually
-                    </SelectItem>
+                    </SelectItem>*/}
                   </SelectContent>
                 </Select>
               </div>
@@ -251,20 +321,86 @@ export default function IncomePage() {
                   style={{
                     borderColor: "var(--border)",
                     background: "var(--card)",
-                  }}>
-                  <div className="flex justify-between">
-                    <span>{inc.description} - {inc.frequency}</span>
-                    <strong style={{ color: "var(--financial-income)" }}>
-                      ${inc.value}
-                    </strong>
+                  }}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span>
+                        {inc.description} - {inc.frequency}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <strong style={{ color: "var(--financial-income)" }}>
+                        ${inc.value}
+                      </strong>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingIncome(inc);
+                          setShowEdit(true);
+                        }}
+                        className="hover:opacity-70 cursor-pointer"
+                        title="Edit income"
+                      >
+                        ✏️
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDeletingIncome(inc);
+                          setSelectedIncome(inc);
+                          setShowDelete(true);
+                        }}
+                        className="hover:opacity-70 cursor-pointer"
+                        title="Delete income"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">{inc.date}</p>
                 </li>
               ))}
             </ul>
           )}
         </CardContent>
       </Card>
+
+      {/* MODAL EDIT */}
+      {editingIncome && (
+        <EditEntityModal
+          open={showEdit}
+          title="Edit income"
+          initialData={editingIncome}
+          onSave={handleEditIncome}
+          onCancel={() => setShowEdit(false)}
+        />
+      )}
+
+      {/* MODAL DELETE */}
+      {deletingIncome && (
+        <DeleteConfirmModal
+          open={showDelete}
+          title="Delete income?"
+          description="This action cannot be undone. This income will be permanently removed."
+          onConfirm={handleDeleteIncome}
+          onCancel={() => {
+            setShowDelete(false);
+            setDeletingIncome(null);
+            setSelectedIncome(null);
+          }}
+        />
+      )}
+
+      {toast && (
+        <FeedbackToast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

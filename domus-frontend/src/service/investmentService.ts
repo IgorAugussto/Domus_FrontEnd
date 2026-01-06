@@ -6,7 +6,8 @@ export interface Investment {
   id?: string;
   description: string;
   value: number;
-  date: string;
+  startDate: string;
+  endDate: string;
   typeInvestments: string;        // opcional, se tiver
   expectedReturn: number; // opcional
 }
@@ -17,7 +18,8 @@ export const investmentService = {
     return api.post("/investments", {
       value: data.amount,
       description: data.description,
-      date: data.date,
+      startDate: data.startDate,
+      endDate: data.endDate,
       typeInvestments: data.type,
       expectedReturn: data.expectedReturn
     });
@@ -31,5 +33,21 @@ export const investmentService = {
   getTotal: async () => {
     const response = await api.get("/investments/total");
     return response.data;
-  }
+  },
+
+  update: async (id: number, data: any) => {
+      return api.put(`/investments/${id}`, {
+        value: data.amount,
+        description: data.description,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        category: data.category,
+        typeInvestments: data.typeInvestments,
+        expectedReturn: data.expectedReturn
+      });
+    },
+  
+    delete: async (id: number) => {
+      return api.delete(`/investments/${id}`);
+    },
 };

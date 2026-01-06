@@ -5,7 +5,10 @@ export interface Income {
   id?: string;
   description: string;
   value: number;
-  date: string;
+  startDate: string;
+  endDate: string;
+  frequency: string;
+  recurring: boolean;
   category: string;
 }
 
@@ -14,7 +17,9 @@ export const incomeService = {
     return api.post("/income", {
       value: data.amount,
       description: data.description,
-      date: data.date,
+      startDate: data.startDate,
+      endDate: data.endDate,      // ✅
+      recurring: data.recurring,
       category: data.category,
       frequency: data.frequency
     });
@@ -22,12 +27,26 @@ export const incomeService = {
 
   getAll: async () => {
     const response = await api.get("/income");
-    return response.data; // 👈 AQUI ESTAVA O ERRO DO DASHBOARD
+    return response.data;
   },
 
   getTotal: async () => {
     const response = await api.get("/income/total");
     return response.data;
-  }
+  },
+
+  update: async (id: number, data: any) => {
+    return api.put(`/income/${id}`, {
+      value: data.amount,
+      description: data.description,
+      startDate: data.startDate,
+      category: data.category,
+      frequency: data.frequency,
+    });
+  },
+
+  delete: async (id: number) => {
+    return api.delete(`/income/${id}`);
+  },
 };
 
