@@ -235,17 +235,41 @@ export function DashboardPage() {
   const chartData = activeTab === "GERAL" ? yearlyData : monthlyData;
 
   const ClickableMonthTick = ({ x, y, payload }: any) => {
+    const isActive = payload.value === selectedMonth;
+
+    const width = 64;
+    const height = 26;
+    const rx = 8;
+
     return (
-      <text
-        x={x}
-        y={y + 10}
-        textAnchor="middle"
-        fill="var(--muted-foreground)"
+      <g
+        transform={`translate(${x - width / 2}, ${y})`}
         style={{ cursor: "pointer" }}
         onClick={() => handleMonthClick(payload.value)}
       >
-        {payload.value}
-      </text>
+        {/* Fundo do "botão" */}
+        <rect
+          width={width}
+          height={height}
+          rx={rx}
+          ry={rx}
+          fill={isActive ? "var(--financial-trust)" : "var(--card)"}
+          stroke={isActive ? "var(--financial-trust)" : "var(--border)"}
+          strokeWidth={1}
+        />
+
+        {/* Texto */}
+        <text
+          x={width / 2}
+          y={height / 2 + 4}
+          textAnchor="middle"
+          fill={isActive ? "#fff" : "var(--muted-foreground)"}
+          fontSize={12}
+          fontWeight={isActive ? "600" : "400"}
+        >
+          {payload.value}
+        </text>
+      </g>
     );
   };
 
@@ -471,11 +495,10 @@ export function DashboardPage() {
                 <CartesianGrid stroke="var(--border)" />
 
                 <XAxis
-  dataKey="month"
-  stroke="var(--muted-foreground)"
-  tick={<ClickableMonthTick />}
-/>
-
+                  dataKey="month"
+                  stroke="var(--muted-foreground)"
+                  tick={<ClickableMonthTick />}
+                />
 
                 <YAxis stroke="var(--muted-foreground)" />
 
