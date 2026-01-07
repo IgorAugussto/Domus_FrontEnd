@@ -59,6 +59,20 @@ export function DashboardPage() {
   const [kpiNetWorth, setKpiNetWorth] = useState(0);
   const [kpiSavingsRate, setKpiSavingsRate] = useState<number>(0);
 
+  const loadMonthlySummary = async (month: string) => {
+    try {
+      const { data } = await dashboardService.getMonthlySummary(month);
+
+      setKpiIncome(Number(data.income));
+      setKpiExpenses(Number(data.expenses));
+      setKpiInvestments(Number(data.investments));
+      setKpiNetWorth(Number(data.netWorth));
+      setKpiSavingsRate(Number(data.savingsRate));
+    } catch (err) {
+      console.error("Erro ao carregar resumo mensal", err);
+    }
+  };
+
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
@@ -150,19 +164,7 @@ export function DashboardPage() {
     );
   }
 
-  const loadMonthlySummary = async (month: string) => {
-    try {
-      const { data } = await dashboardService.getMonthlySummary(month);
-
-      setKpiIncome(Number(data.income));
-      setKpiExpenses(Number(data.expenses));
-      setKpiInvestments(Number(data.investments));
-      setKpiNetWorth(Number(data.netWorth));
-      setKpiSavingsRate(Number(data.savingsRate));
-    } catch (err) {
-      console.error("Erro ao carregar resumo mensal", err);
-    }
-  };
+  
 
   // Categorias de despesas
   const categoryTotals: Record<string, number> = {};
