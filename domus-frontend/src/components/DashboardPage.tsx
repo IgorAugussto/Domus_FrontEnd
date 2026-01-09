@@ -40,12 +40,7 @@ export function DashboardPage() {
   const [costs, setCosts] = useState<Cost[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
-  const [totalIncome, setTotalIncome] = useState<number>(0);
-  const [totalCost, setTotalCost] = useState<number>(0);
-  const [totalInvestments, setTotalInvestments] = useState<number>(0);
-  const [investmentGains, setInvestmentGains] = useState(0);
-  const [netWorth, setNetWorth] = useState(0);
-  const [savingsRate, setSavingsRate] = useState("0");
+  const [totalInvestments, /*setTotalInvestments*/] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [monthlyData, setMonthlyData] = useState<MonthlyProjection[]>([]);
   const [yearlyData, setYearlyData] = useState<YearlyProjection[]>([]);
@@ -61,7 +56,7 @@ export function DashboardPage() {
 
   const loadMonthlySummary = async (month: string) => {
     try {
-      const { data } = await dashboardService.getMonthlySummary(month);
+      const data = await dashboardService.getMonthlySummary(month);
 
       setKpiIncome(Number(data.income));
       setKpiExpenses(Number(data.expenses));
@@ -82,10 +77,10 @@ export function DashboardPage() {
           costData,
           incomeData,
           investmentData,
-          totalIncomeValue,
-          totalCostValue,
-          totalInvestmentValue,
-          dashboardSummary,
+          _totalIncomeValue,
+          _totalCostValue,
+          _totalInvestmentValue,
+          _dashboardSummary,
           monthlyProjectionData,
           yearlyProjectionData,
         ] = await Promise.all([
