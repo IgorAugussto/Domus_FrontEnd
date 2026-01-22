@@ -166,6 +166,14 @@ export default function RegisterPage() {
           </form>
         </CardContent>
       </Card>
+
+      {toast && (
+        <FeedbackToast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
