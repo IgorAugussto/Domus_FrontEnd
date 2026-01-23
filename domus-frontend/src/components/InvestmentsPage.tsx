@@ -29,17 +29,17 @@ export default function InvestmentsPage() {
   const [expectedReturn, setExpectedReturn] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [endDate, setEndDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [investments, setInvestments] = useState<any[]>([]);
   const [selectedInvestment, setSelectedInvestment] = useState<any>(null);
   const [editingInvestment, setEditingInvestment] = useState<any | null>(null);
   const [showEdit, setShowEdit] = useState(false);
   const [deletingInvestment, setDeletingInvestment] = useState<any | null>(
-    null
+    null,
   );
   const [showDelete, setShowDelete] = useState(false);
   const [toast, setToast] = useState<{
@@ -52,15 +52,14 @@ export default function InvestmentsPage() {
   }, []);
 
   useEffect(() => {
-  if (!toast) return;
+    if (!toast) return;
 
-  const timer = setTimeout(() => {
-    setToast(null);
-  }, 3000);
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 3000);
 
-  return () => clearTimeout(timer);
-}, [toast]);
-
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const loadInvestment = async () => {
     try {
@@ -89,7 +88,7 @@ export default function InvestmentsPage() {
       await loadInvestment();
 
       setToast({
-        message: "Despesa salva com sucesso",
+        message: "Investimento salva com sucesso",
         type: "success",
       });
 
@@ -153,7 +152,7 @@ export default function InvestmentsPage() {
           className="text-3xl font-bold"
           style={{ color: "var(--financial-investment)" }}
         >
-          Add Investment
+          Adicionar Investimento
         </h1>
       </div>
 
@@ -171,14 +170,14 @@ export default function InvestmentsPage() {
             style={{ color: "var(--financial-investment)" }}
           >
             <Plus className="h-5 w-5" />
-            New Investment
+            Novo Investimento
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
+                <Label htmlFor="amount">Valor</Label>
                 <Input
                   id="amount"
                   type="number"
@@ -186,12 +185,13 @@ export default function InvestmentsPage() {
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
+                  onWheel={(e) => e.currentTarget.blur()}
                   required
                   style={{ borderColor: "var(--border)" }}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="Date">Date</Label>
+                <Label htmlFor="Date">Data</Label>
                 <Input
                   id="startDate"
                   type="Date"
@@ -205,44 +205,44 @@ export default function InvestmentsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="type">Investment Type</Label>
+                <Label htmlFor="type">Tipo de Investimento</Label>
                 <Select value={type} onValueChange={setType} required>
                   <SelectTrigger
                     className="select-trigger"
                     style={{ borderColor: "var(--border)" }}
                   >
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent className="select-content">
                     <SelectItem className="select-item" value="Stocks">
-                      Stocks
+                      Ações
                     </SelectItem>
                     <SelectItem className="select-item" value="Bonds">
-                      Bonds
+                      Renda Fixa
                     </SelectItem>
                     <SelectItem className="select-item" value="Real Estate">
-                      Real Estate
+                      Imóveis
                     </SelectItem>
                     <SelectItem className="select-item" value="Crypto">
-                      Cryptocurrency
+                      Criptomoedas
                     </SelectItem>
                     <SelectItem className="select-item" value="Mutual Funds">
-                      Mutual Funds
+                      Fundos de Investimento
                     </SelectItem>
                     <SelectItem className="select-item" value="ETF">
                       ETF
                     </SelectItem>
                     <SelectItem className="select-item" value="Savings">
-                      Savings Account
+                      Poupança
                     </SelectItem>
                     <SelectItem className="select-item" value="Other">
-                      Other
+                      Outros
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="expectedReturn">Expected Return (%)</Label>
+                <Label htmlFor="expectedReturn">Rentabilidade Esperada (%)</Label>
                 <Input
                   id="expectedReturn"
                   type="number"
@@ -258,7 +258,7 @@ export default function InvestmentsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="Date">Final Date</Label>
+                <Label htmlFor="Date">Data Final</Label>
                 <Input
                   id="endDate"
                   type="Date"
@@ -271,10 +271,10 @@ export default function InvestmentsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description">Descrição (opcional)</Label>
               <Textarea
                 id="description"
-                placeholder="Details about this investment"
+                placeholder="Detalhes sobre este investimento"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
@@ -290,7 +290,7 @@ export default function InvestmentsPage() {
                 color: "white",
               }}
             >
-              Add Investment
+              Adicionar Investimento
             </Button>
           </form>
         </CardContent>

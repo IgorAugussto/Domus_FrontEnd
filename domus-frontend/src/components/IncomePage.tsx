@@ -160,7 +160,7 @@ export default function IncomePage() {
           className="text-3xl font-bold"
           style={{ color: "var(--financial-income)" }}
         >
-          Add Income
+          Adicionar Renda
         </h1>
       </div>
 
@@ -178,7 +178,7 @@ export default function IncomePage() {
             style={{ color: "var(--financial-income)" }}
           >
             <Plus className="h-5 w-5" />
-            New Income
+            Nova Renda
           </CardTitle>
         </CardHeader>
 
@@ -186,7 +186,7 @@ export default function IncomePage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
+                <Label htmlFor="amount">Valor</Label>
                 <Input
                   id="amount"
                   type="number"
@@ -194,13 +194,14 @@ export default function IncomePage() {
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
+                  onWheel={(e) => e.currentTarget.blur()}
                   required
                   style={{ borderColor: "var(--border)" }}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date">Data</Label>
                 <Input
                   id="date"
                   type="date"
@@ -214,17 +215,17 @@ export default function IncomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">Categoria</Label>
                 <Select value={category} onValueChange={setCategory} required>
                   <SelectTrigger
                     className="select-trigger"
                     style={{ borderColor: "var(--border)" }}
                   >
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder="Selecionar Categoria" />
                   </SelectTrigger>
                   <SelectContent className="select-content">
                     <SelectItem className="select-item" value="Salary">
-                      Salary
+                      Salário
                     </SelectItem>
                     <SelectItem className="select-item" value="Freelance">
                       Freelance
@@ -233,26 +234,26 @@ export default function IncomePage() {
                       Bonus
                     </SelectItem>
                     <SelectItem className="select-item" value="Investment">
-                      Investment Returns
+                      Retorno de Investimentos
                     </SelectItem>
                     <SelectItem className="select-item" value="Gift">
-                      Gift
+                      Presente
                     </SelectItem>
                     <SelectItem className="select-item" value="Other">
-                      Other
+                      Outros
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="frequency">Frequency</Label>
+                <Label htmlFor="frequency">Frequência</Label>
                 <Select value={frequency} onValueChange={setFrequency}>
                   <SelectTrigger className="select-trigger">
-                    <SelectValue placeholder="Select frequency" />
+                    <SelectValue placeholder="Selecionar Frequência" />
                   </SelectTrigger>
                   <SelectContent className="select-content">
                     <SelectItem className="select-item" value="One-time">
-                      One-time
+                      Única
                     </SelectItem>
                     {/* <SelectItem className="select-item" value="Weekly">
                       Weekly
@@ -261,7 +262,7 @@ export default function IncomePage() {
                       Bi-weekly
                     </SelectItem>*/}
                     <SelectItem className="select-item" value="Monthly">
-                      Monthly
+                      Mensal
                     </SelectItem>
                     {/*<SelectItem className="select-item" value="Quarterly">
                       Quarterly
@@ -275,10 +276,10 @@ export default function IncomePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description">Descrição (opcional)</Label>
               <Textarea
                 id="description"
-                placeholder="Details about this income"
+                placeholder="Detalhes adicionais sobre a renda"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
@@ -291,7 +292,7 @@ export default function IncomePage() {
               className="w-full"
               style={{ background: "var(--financial-income)", color: "white" }}
             >
-              Add Income
+              Adicionar Renda
             </Button>
           </form>
         </CardContent>
@@ -301,7 +302,7 @@ export default function IncomePage() {
       <Card style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <CardHeader>
           <CardTitle style={{ color: "var(--card-foreground)" }}>
-            Recent Income
+            Rendas Recentes
           </CardTitle>
         </CardHeader>
         <CardContent>

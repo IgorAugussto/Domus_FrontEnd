@@ -60,6 +60,23 @@
   --chart-3: #fbbf24; /* investments */
 }
 
+/* ============================= */
+/* REMOVE SCROLL E SETAS DO INPUT NUMBER */
+/* ============================= */
+
+/* Chrome, Edge, Safari */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+
 /*SELECT FORM*/
 /* Wrapper do Select (botão que abre) */
 .select-trigger {
