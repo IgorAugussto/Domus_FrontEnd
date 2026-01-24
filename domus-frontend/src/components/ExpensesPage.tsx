@@ -22,6 +22,8 @@ import { costService } from "../service/costService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { FeedbackToast } from "./FeedbackToast";
+import { expenseCategoryLabels } from "../utils/labels/expenseCategoryLabels";
+import { frequencyLabels } from "../utils/labels/frequencyLabels";
 
 const formatDateToISO = (date: string) => {
   if (!date) return "";
@@ -370,7 +372,7 @@ export default function ExpensesPage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <span>
-                        {inc.description} - {inc.frequency}
+                        {expenseCategoryLabels[inc.category] ?? inc.category} - {frequencyLabels[inc.frequency] ?? inc.frequency}
                       </span>
                     </div>
 

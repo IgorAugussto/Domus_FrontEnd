@@ -54,7 +54,7 @@ export default function Navigation({ onPageChange, onLogout }: NavigationProps) 
               className="flex items-center gap-2 transition-all"
             >
               <Wallet className="h-4 w-4" />
-              Income
+              Receita
             </Button>
 
             <Button
@@ -63,7 +63,7 @@ export default function Navigation({ onPageChange, onLogout }: NavigationProps) 
               className="flex items-center gap-2 transition-all"
             >
               <DollarSign className="h-4 w-4" />
-              Expenses
+              Despesa
             </Button>
 
             <Button
@@ -72,7 +72,7 @@ export default function Navigation({ onPageChange, onLogout }: NavigationProps) 
               className="flex items-center gap-2 transition-all"
             >
               <TrendingUp className="h-4 w-4" />
-              Investments
+              Investimento
             </Button>
           </div>
         </div>

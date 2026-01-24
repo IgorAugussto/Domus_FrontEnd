@@ -22,6 +22,7 @@ import { investmentService } from "../service/investmentService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { FeedbackToast } from "./FeedbackToast";
+import { investmentTypeLabels } from "../utils/labels/investmentTypeLabels";
 
 export default function InvestmentsPage() {
   const [amount, setAmount] = useState("");
@@ -325,7 +326,7 @@ export default function InvestmentsPage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <span>
-                        {inc.description} - {inc.expectedReturn}%
+                        {investmentTypeLabels[inc.description] ?? inc.description} - {inc.expectedReturn}%
                       </span>
                     </div>
 

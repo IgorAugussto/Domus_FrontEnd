@@ -36,6 +36,8 @@ import { useState, useEffect } from "react";
 import type { MonthlyProjection } from "../service/dashboardService";
 import type { YearlyProjection } from "../service/dashboardService";
 import { useMemo } from "react";
+import { investmentTypeLabels } from "../utils/labels/investmentTypeLabels";
+import { expenseCategoryLabels } from "../utils/labels/expenseCategoryLabels";
 
 export function DashboardPage() {
   const [costs, setCosts] = useState<Cost[]>([]);
@@ -292,7 +294,7 @@ export function DashboardPage() {
           className="text-3xl font-bold"
           style={{ color: "var(--financial-trust)" }}
         >
-          Financial Dashboard
+          Dashboard Financeiro
         </h1>
       </div>
 
@@ -574,22 +576,29 @@ export function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={500}>
                 <PieChart>
                   <Pie
                     data={expenseCategories}
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    outerRadius={90}
                     dataKey="value"
-                    label={(entry) =>
-                      `${entry.name}: $${entry.value.toFixed(2)}`
-                    }
+                    label={(entry) => {
+                      const name =
+                        typeof entry.name === "string" ? entry.name : "";
+
+                      const translatedName =
+                        expenseCategoryLabels[name] ?? name;
+
+                      return `${translatedName}: $${entry.value.toFixed(2)}`;
+                    }}
                   >
                     {expenseCategories.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
+
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "var(--card)",
@@ -656,22 +665,28 @@ export function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={500}>
               <PieChart>
                 <Pie
                   data={investmentPortfolio}
                   cx="50%"
                   cy="50%"
-                  innerRadius={40}
-                  outerRadius={70}
+                  outerRadius={90}
                   dataKey="value"
-                  paddingAngle={3}
-                  label={({ name, value }) => `${name}: ${value}%`}
+                  label={(entry) => {
+                    const name =
+                      typeof entry.name === "string" ? entry.name : "";
+
+                    const translatedName = investmentTypeLabels[name] ?? name;
+
+                    return `${translatedName}: $${entry.value.toFixed(2)}`;
+                  }}
                 >
                   {investmentPortfolio.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
+
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "var(--card)",
