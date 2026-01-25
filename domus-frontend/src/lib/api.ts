@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080/api", // 👈 importante: sempre começar com /api
+  baseURL: import.meta.env.VITE_API_URL, // 👈 importante: sempre começar com /api
   timeout: 10000,
 });
 

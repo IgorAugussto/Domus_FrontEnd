@@ -1,8 +1,5 @@
 // src/App.tsx
-
-import React from "react";
-
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 
 import { DashboardPage } from "./components/DashboardPage";
@@ -13,10 +10,7 @@ import LoginPage from "./components/LoginPage";
 import PrivateLayout from "./layouts/PrivateLayout";
 import RegisterPage from "./components/RegisterPage";
 
-function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/login" />;
-}
+
 
 // === APP PRINCIPAL ===
 export default function App() {

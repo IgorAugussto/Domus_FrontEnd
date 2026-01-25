@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../ui-components/button";
 import { Input } from "../ui-components/input";
 import { Label } from "../ui-components/label";
@@ -11,6 +11,7 @@ import {
   CardDescription,
 } from "../ui-components/card";
 import { useNavigate } from "react-router-dom";
+import { FeedbackToast } from "./FeedbackToast";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -18,7 +19,26 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!toast) return;
+
+    const timer = setTimeout(() => {
+      setToast(null);
+      // Só redireciona DEPOIS que o toast sumir (melhor UX)
+      if (toast.type === "success") {
+        navigate("/login");
+      }
+    }, 2200);
+
+    return () => clearTimeout(timer);
+  }, [toast, navigate]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +50,12 @@ export default function RegisterPage() {
         password,
       });
 
-      navigate("/dashboard");
+      setToast({
+        message: "Conta criada com sucesso! Faça login para entrar.",
+        type: "success",
+      });
+
+      navigate("/login");
     } catch {
       alert("Falha ao criar conta!");
     }
@@ -141,6 +166,14 @@ export default function RegisterPage() {
           </form>
         </CardContent>
       </Card>
+
+      {toast && (
+        <FeedbackToast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

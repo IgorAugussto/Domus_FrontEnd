@@ -35,33 +35,34 @@ import { dashboardService } from "../service/dashboardService";
 import { useState, useEffect } from "react";
 import type { MonthlyProjection } from "../service/dashboardService";
 import type { YearlyProjection } from "../service/dashboardService";
+import { useMemo } from "react";
+import { investmentTypeLabels } from "../utils/labels/investmentTypeLabels";
+import { expenseCategoryLabels } from "../utils/labels/expenseCategoryLabels";
 
 export function DashboardPage() {
   const [costs, setCosts] = useState<Cost[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
-  const [totalIncome, setTotalIncome] = useState<number>(0);
-  const [totalCost, setTotalCost] = useState<number>(0);
-  const [totalInvestments, setTotalInvestments] = useState<number>(0);
-  const [investmentGains, setInvestmentGains] = useState(0);
-  const [netWorth, setNetWorth] = useState(0);
-  const [savingsRate, setSavingsRate] = useState("0");
+  //const [totalInvestments, /*setTotalInvestments*/] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [monthlyData, setMonthlyData] = useState<MonthlyProjection[]>([]);
   const [yearlyData, setYearlyData] = useState<YearlyProjection[]>([]);
-  const [activeTab, setActiveTab] = useState<"GERAL" | "MENSAL">("GERAL");
+  const [activeTab, setActiveTab] = useState<"ANUAL" | "MENSAL">("ANUAL");
   const [selectedMonth, setSelectedMonth] = useState<string>(
-    dayjs().format("YYYY-MM")
+    dayjs().format("YYYY-MM"),
   );
   const [kpiIncome, setKpiIncome] = useState(0);
   const [kpiExpenses, setKpiExpenses] = useState(0);
   const [kpiInvestments, setKpiInvestments] = useState(0);
   const [kpiNetWorth, setKpiNetWorth] = useState(0);
   const [kpiSavingsRate, setKpiSavingsRate] = useState<number>(0);
+  const totalInvestments = useMemo(() => {
+    return investments.reduce((acc, inv) => acc + Number(inv.value), 0);
+  }, [investments]);
 
   const loadMonthlySummary = async (month: string) => {
     try {
-      const { data } = await dashboardService.getMonthlySummary(month);
+      const data = await dashboardService.getMonthlySummary(month);
 
       setKpiIncome(Number(data.income));
       setKpiExpenses(Number(data.expenses));
@@ -82,10 +83,10 @@ export function DashboardPage() {
           costData,
           incomeData,
           investmentData,
-          totalIncomeValue,
-          totalCostValue,
-          totalInvestmentValue,
-          dashboardSummary,
+          _totalIncomeValue,
+          _totalCostValue,
+          _totalInvestmentValue,
+          _dashboardSummary,
           monthlyProjectionData,
           yearlyProjectionData,
         ] = await Promise.all([
@@ -97,7 +98,7 @@ export function DashboardPage() {
           investmentService.getTotal(),
           dashboardService.getSummary(),
           dashboardService.getMonthlyProjection(), // TAB MENSAL
-          dashboardService.getYearlyProjection(), // TAB GERAL
+          dashboardService.getYearlyProjection(), // TAB ANUAL
         ]);
 
         /* ============================
@@ -152,9 +153,22 @@ export function DashboardPage() {
   ============================ */
 
   const handleMonthClick = (month: string) => {
-    if (activeTab !== "GERAL") return;
+    if (activeTab !== "ANUAL") return;
     setSelectedMonth(month);
   };
+
+  const expectedReturnAverage = useMemo(() => {
+    if (totalInvestments === 0) return 0;
+
+    const weightedReturn = investments.reduce((acc, inv) => {
+      const value = Number(inv.value);
+      const rate = Number(inv.expectedReturn) || 0;
+
+      return acc + value * (rate / 100);
+    }, 0);
+
+    return (weightedReturn / totalInvestments) * 100;
+  }, [investments, totalInvestments]);
 
   if (loading) {
     return (
@@ -163,8 +177,6 @@ export function DashboardPage() {
       </div>
     );
   }
-
-  
 
   // Categorias de despesas
   const categoryTotals: Record<string, number> = {};
@@ -191,7 +203,7 @@ export function DashboardPage() {
         value,
         color: palette[safeI % palette.length], // 100% seguro
       };
-    }
+    },
   );
 
   // Portfolio de investimentos
@@ -222,19 +234,10 @@ export function DashboardPage() {
         value: Number(percentage),
         color: colors[safeIndex % colors.length], // ← CORRIGIDO
       };
-    }
+    },
   );
 
-  const expectedReturnAverage =
-    totalInvestments > 0
-      ? (investments.reduce((acc, inv) => {
-          return acc + Number(inv.value) * (Number(inv.expectedReturn) / 100);
-        }, 0) /
-          totalInvestments) *
-        100
-      : 0;
-
-  const chartData = activeTab === "GERAL" ? yearlyData : monthlyData;
+  const chartData = activeTab === "ANUAL" ? yearlyData : monthlyData;
 
   const ClickableMonthTick = ({ x, y, payload }: any) => {
     const isActive = payload.value === selectedMonth;
@@ -291,7 +294,7 @@ export function DashboardPage() {
           className="text-3xl font-bold"
           style={{ color: "var(--financial-trust)" }}
         >
-          Financial Dashboard
+          Dashboard Financeiro
         </h1>
       </div>
 
@@ -307,7 +310,7 @@ export function DashboardPage() {
               className="text-sm"
               style={{ color: "var(--financial-success)" }}
             >
-              Total Income
+              Renda Total
             </CardTitle>
             <Wallet
               className="h-4 w-4"
@@ -329,7 +332,7 @@ export function DashboardPage() {
               style={{ color: "var(--financial-success)" }}
             >
               <TrendingUp className="h-3 w-3 inline mr-1" />
-              {incomes.length} entries
+              {incomes.length} lançamentos
             </p>
           </CardContent>
         </Card>
@@ -345,7 +348,7 @@ export function DashboardPage() {
               className="text-sm"
               style={{ color: "var(--financial-danger)" }}
             >
-              Total Expenses
+              Despesas Totais
             </CardTitle>
             <DollarSign
               className="h-4 w-4"
@@ -367,7 +370,7 @@ export function DashboardPage() {
               style={{ color: "var(--financial-danger)" }}
             >
               <TrendingDown className="h-3 w-3 inline mr-1" />
-              {costs.length} entries
+              {costs.length} lançamentos
             </p>
           </CardContent>
         </Card>
@@ -383,7 +386,7 @@ export function DashboardPage() {
               className="text-sm"
               style={{ color: "var(--financial-investment)" }}
             >
-              Portfolio Value
+              Carteira de Investimentos
             </CardTitle>
             <TrendingUp
               className="h-4 w-4"
@@ -405,7 +408,7 @@ export function DashboardPage() {
               style={{ color: "var(--financial-success)" }}
             >
               <TrendingUp className="h-3 w-3 inline mr-1" />+
-              {expectedReturnAverage.toFixed(2)}% expected return
+              {expectedReturnAverage.toFixed(2)}% Retorno esperado
             </p>
           </CardContent>
         </Card>
@@ -421,7 +424,7 @@ export function DashboardPage() {
               className="text-sm"
               style={{ color: "var(--financial-trust)" }}
             >
-              Net Worth
+              Patrimônio Líquido
             </CardTitle>
             <Target
               className="h-4 w-4"
@@ -442,7 +445,7 @@ export function DashboardPage() {
               className="text-xs mt-1"
               style={{ color: "var(--financial-trust)" }}
             >
-              Savings Rate: {kpiSavingsRate}%
+              Quanto Você Economizou: {kpiSavingsRate}%
             </p>
           </CardContent>
         </Card>
@@ -451,11 +454,11 @@ export function DashboardPage() {
       <div className="dashboard-tabs">
         <button
           className={`dashboard-tab ${
-            activeTab === "GERAL" ? "active" : "tab"
+            activeTab === "ANUAL" ? "active" : "tab"
           }`}
-          onClick={() => setActiveTab("GERAL")}
+          onClick={() => setActiveTab("ANUAL")}
         >
-          Geral
+          Anual
         </button>
 
         <button
@@ -474,9 +477,9 @@ export function DashboardPage() {
         >
           <CardHeader>
             <CardTitle style={{ color: "var(--card-foreground)" }}>
-              {activeTab === "GERAL"
-                ? "Yearly Financial Trends"
-                : "Monthly Financial Trends"}
+              {activeTab === "ANUAL"
+                ? "Visão Financeira Anual"
+                : "Visão Financeira Mensal"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -484,8 +487,8 @@ export function DashboardPage() {
               <AreaChart
                 data={chartData}
                 onClick={(state: any) => {
-                  // 🔒 Só permite clique no modo GERAL
-                  if (activeTab !== "GERAL") return;
+                  // 🔒 Só permite clique no modo ANUAL
+                  if (activeTab !== "ANUAL") return;
 
                   const payload = state?.activePayload?.[0]?.payload;
                   if (!payload?.month) return;
@@ -569,26 +572,33 @@ export function DashboardPage() {
           >
             <CardHeader>
               <CardTitle style={{ color: "var(--card-foreground)" }}>
-                Expense Categories
+                Despesas por Categoria
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={500}>
                 <PieChart>
                   <Pie
                     data={expenseCategories}
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    outerRadius={90}
                     dataKey="value"
-                    label={(entry) =>
-                      `${entry.name}: $${entry.value.toFixed(2)}`
-                    }
+                    label={(entry) => {
+                      const name =
+                        typeof entry.name === "string" ? entry.name : "";
+
+                      const translatedName =
+                        expenseCategoryLabels[name] ?? name;
+
+                      return `${translatedName}: $${entry.value.toFixed(2)}`;
+                    }}
                   >
                     {expenseCategories.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
+
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "var(--card)",
@@ -651,26 +661,32 @@ export function DashboardPage() {
         >
           <CardHeader>
             <CardTitle style={{ color: "var(--card-foreground)" }}>
-              Investment Allocation
+              Alocação de Investimentos
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={500}>
               <PieChart>
                 <Pie
                   data={investmentPortfolio}
                   cx="50%"
                   cy="50%"
-                  innerRadius={40}
-                  outerRadius={70}
+                  outerRadius={90}
                   dataKey="value"
-                  paddingAngle={3}
-                  label={({ name, value }) => `${name}: ${value}%`}
+                  label={(entry) => {
+                    const name =
+                      typeof entry.name === "string" ? entry.name : "";
+
+                    const translatedName = investmentTypeLabels[name] ?? name;
+
+                    return `${translatedName}: $${entry.value.toFixed(2)}`;
+                  }}
                 >
                   {investmentPortfolio.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
+
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "var(--card)",

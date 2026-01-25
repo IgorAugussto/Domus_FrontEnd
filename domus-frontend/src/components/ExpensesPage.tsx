@@ -22,6 +22,8 @@ import { costService } from "../service/costService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { FeedbackToast } from "./FeedbackToast";
+import { expenseCategoryLabels } from "../utils/labels/expenseCategoryLabels";
+import { frequencyLabels } from "../utils/labels/frequencyLabels";
 
 const formatDateToISO = (date: string) => {
   if (!date) return "";
@@ -96,7 +98,7 @@ export default function ExpensesPage() {
       await loadCosts();
 
       setToast({
-        message: "Receita salva com sucesso",
+        message: "Despesa salva com sucesso",
         type: "success",
       });
 
@@ -170,7 +172,7 @@ export default function ExpensesPage() {
           className="text-3xl font-bold"
           style={{ color: "var(--financial-danger)" }}
         >
-          Add Expense
+          Adicionar Despesa
         </h1>
       </div>
 
@@ -188,14 +190,14 @@ export default function ExpensesPage() {
             style={{ color: "var(--financial-danger)" }}
           >
             <Plus className="h-5 w-5" />
-            New Expense
+            Nova Despesa
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
+                <Label htmlFor="amount">Valor</Label>
                 <Input
                   id="amount"
                   type="number"
@@ -203,12 +205,13 @@ export default function ExpensesPage() {
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
+                  onWheel={(e) => e.currentTarget.blur()}
                   required
                   style={{ borderColor: "var(--border)" }}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date">Data</Label>
                 <Input
                   id="date"
                   type="date"
@@ -222,41 +225,41 @@ export default function ExpensesPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">Categoria</Label>
                 <Select value={category} onValueChange={setCategory} required>
                   <SelectTrigger
                     className="select-trigger"
                     style={{ borderColor: "var(--border)" }}
                   >
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue placeholder="Selecionar Categoria" />
                   </SelectTrigger>
                   <SelectContent className="select-content">
                     <SelectItem className="select-item" value="Food & Dining">
-                      Food & Dining
+                      Alimentação
                     </SelectItem>
                     <SelectItem className="select-item" value="Transportation">
-                      Transportation
+                      Transporte
                     </SelectItem>
                     <SelectItem className="select-item" value="Shopping">
-                      Shopping
+                      Compras
                     </SelectItem>
                     <SelectItem className="select-item" value="Entertainment">
-                      Entertainment
+                      Lazer
                     </SelectItem>
                     <SelectItem
                       className="select-item"
                       value="Bills & Utilities"
                     >
-                      Bills & Utilities
+                      Contas e Serviços
                     </SelectItem>
                     <SelectItem className="select-item" value="Healthcare">
-                      Healthcare
+                      Saúde
                     </SelectItem>
                     <SelectItem className="select-item" value="Education">
-                      Education
+                      Educação
                     </SelectItem>
                     <SelectItem className="select-item" value="Other">
-                      Other
+                      Outros
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -266,7 +269,7 @@ export default function ExpensesPage() {
                 <Label htmlFor="frequency">Frequency</Label>
                 <Select value={frequency} onValueChange={handleFrequencyChange}>
                   <SelectTrigger className="select-trigger">
-                    <SelectValue placeholder="Select frequency" />
+                    <SelectValue placeholder="Selecionar Frequência" />
                   </SelectTrigger>
                   <SelectContent className="select-content">
                     <SelectItem className="select-item" value="One-time">
@@ -315,10 +318,10 @@ export default function ExpensesPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description">Descrição (opcional)</Label>
               <Textarea
                 id="description"
-                placeholder="Enter expense description"
+                placeholder="Descrição da despesa"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
@@ -334,7 +337,7 @@ export default function ExpensesPage() {
                 color: "white",
               }}
             >
-              Add Expense
+              Adicionar Despesa
             </Button>
           </form>
         </CardContent>
@@ -344,7 +347,7 @@ export default function ExpensesPage() {
       <Card style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <CardHeader>
           <CardTitle style={{ color: "var(--card-foreground)" }}>
-            Recent Expenses
+            Despesas Recentes
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -369,7 +372,7 @@ export default function ExpensesPage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <span>
-                        {inc.description} - {inc.frequency}
+                        {expenseCategoryLabels[inc.category] ?? inc.category} - {frequencyLabels[inc.frequency] ?? inc.frequency}
                       </span>
                     </div>
 
