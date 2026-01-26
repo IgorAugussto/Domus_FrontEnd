@@ -68,9 +68,9 @@ export function EditEntityModal({
       expectedReturn: showFieldsInvestments
         ? Number(formData.expectedReturn)
         : undefined,
-        typeInvestments: showFieldsInvestments
-      ? formData.typeInvestments
-      : undefined,
+      typeInvestments: showFieldsInvestments
+        ? formData.typeInvestments
+        : undefined,
     });
   };
 
@@ -85,7 +85,7 @@ export function EditEntityModal({
           {/* AMOUNT + START DATE */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Amount</Label>
+              <Label>Valor</Label>
               <Input
                 type="number"
                 value={formData.amount || ""}
@@ -94,7 +94,7 @@ export function EditEntityModal({
             </div>
 
             <div className="space-y-2">
-              <Label>Start Date</Label>
+              <Label>Data de Início</Label>
               <Input
                 type="date"
                 value={formData.startDate || ""}
@@ -108,28 +108,45 @@ export function EditEntityModal({
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Investment Type</Label>
+                  <Label>Tipo de Investimento</Label>
                   <Select
                     value={formData.typeInvestments}
-                    onValueChange={(v) =>
-                      handleChange("typeInvestments", v)
-                    }
+                    onValueChange={(v) => handleChange("typeInvestments", v)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select investment type" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem className="select-item" value="ETF">ETF</SelectItem>
-                      <SelectItem className="select-item" value="Stocks">Stocks</SelectItem>
-                      <SelectItem className="select-item" value="Crypto">Crypto</SelectItem>
-                      <SelectItem className="select-item" value="Fixed Income">Fixed Income</SelectItem>
-                      <SelectItem className="select-item" value="Other">Other</SelectItem>
+                    <SelectContent className="select-content">
+                      <SelectItem className="select-item" value="Stocks">
+                        Ações
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Bonds">
+                        Renda Fixa
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Real Estate">
+                        Imóveis
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Crypto">
+                        Criptomoedas
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Mutual Funds">
+                        Fundos de Investimento
+                      </SelectItem>
+                      <SelectItem className="select-item" value="ETF">
+                        ETF
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Savings">
+                        Poupança
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Other">
+                        Outros
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Expected Return (%)</Label>
+                  <Label>Rentabilidade Esperada (%)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -142,7 +159,7 @@ export function EditEntityModal({
               </div>
 
               <div className="space-y-2">
-                <Label>End Date</Label>
+                <Label>Data de Término</Label>
                 <Input
                   type="date"
                   value={formData.endDate || ""}
@@ -156,7 +173,7 @@ export function EditEntityModal({
           {!showFieldsInvestments && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Category</Label>
+                <Label>Categoria</Label>
                 <Select
                   value={formData.category}
                   onValueChange={(v) => handleChange("category", v)}
@@ -167,37 +184,61 @@ export function EditEntityModal({
 
                   {showExpenseCategories ? (
                     <SelectContent>
-                      <SelectItem value="Food & Dining">
-                        Food & Dining
+                      <SelectItem className="select-item" value="Food & Dining">
+                        Alimentação
                       </SelectItem>
-                      <SelectItem value="Transportation">
-                        Transportation
+                      <SelectItem
+                        className="select-item"
+                        value="Transportation"
+                      >
+                        Transporte
                       </SelectItem>
-                      <SelectItem value="Shopping">Shopping</SelectItem>
-                      <SelectItem value="Entertainment">
-                        Entertainment
+                      <SelectItem className="select-item" value="Shopping">
+                        Compras
                       </SelectItem>
-                      <SelectItem value="Bills & Utilities">
-                        Bills & Utilities
+                      <SelectItem className="select-item" value="Entertainment">
+                        Entretenimento
                       </SelectItem>
-                      <SelectItem value="Healthcare">Healthcare</SelectItem>
-                      <SelectItem value="Education">Education</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem
+                        className="select-item"
+                        value="Bills & Utilities"
+                      >
+                        Contas e Serviços
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Healthcare">
+                        Saúde
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Education">
+                        Educação
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Other">
+                        Outro
+                      </SelectItem>
                     </SelectContent>
                   ) : (
                     <SelectContent>
-                      <SelectItem value="Salary">Salary</SelectItem>
-                      <SelectItem value="Freelance">Freelance</SelectItem>
-                      <SelectItem value="Bonus">Bonus</SelectItem>
-                      <SelectItem value="Investment">Investment</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem className="select-item" value="Salary">
+                        Salário
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Freelance">
+                        Freelance
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Bonus">
+                        Bônus
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Investment">
+                        Investimento
+                      </SelectItem>
+                      <SelectItem className="select-item" value="Other">
+                        Outro
+                      </SelectItem>
                     </SelectContent>
                   )}
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Frequency</Label>
+                <Label>Frequência</Label>
                 <Select
                   value={formData.frequency}
                   onValueChange={(v) => handleChange("frequency", v)}
@@ -206,8 +247,12 @@ export function EditEntityModal({
                     <SelectValue placeholder="Select frequency" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="One-time">One-time</SelectItem>
-                    <SelectItem value="Monthly">Monthly</SelectItem>
+                    <SelectItem className="select-item" value="One-time">
+                      Único
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Monthly">
+                      Mensal
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -216,7 +261,7 @@ export function EditEntityModal({
 
           {/* DESCRIPTION */}
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>Descrição</Label>
             <Textarea
               rows={3}
               value={formData.description || ""}
@@ -227,7 +272,7 @@ export function EditEntityModal({
           {/* DURATION (EXPENSES ONLY) */}
           {showDurationInMonths && (
             <div className="space-y-2">
-              <Label>Duration (months)</Label>
+              <Label>Duração (meses)</Label>
               <Input
                 type="number"
                 min={1}
@@ -246,7 +291,7 @@ export function EditEntityModal({
               onClick={onCancel}
               className="cursor-pointer"
             >
-              Cancel
+              Cancelar
             </Button>
 
             <Button
@@ -257,7 +302,7 @@ export function EditEntityModal({
                 color: "white",
               }}
             >
-              Save changes
+              Salvar alterações
             </Button>
           </div>
         </CardContent>

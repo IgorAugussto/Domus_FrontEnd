@@ -23,6 +23,7 @@ import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { FeedbackToast } from "./FeedbackToast";
 import { investmentTypeLabels } from "../utils/labels/investmentTypeLabels";
+import { investmentDescriptionLabel } from "../utils/labels/investmentDescriptionLabel";
 
 export default function InvestmentsPage() {
   const [amount, setAmount] = useState("");
@@ -243,7 +244,9 @@ export default function InvestmentsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="expectedReturn">Rentabilidade Esperada (%)</Label>
+                <Label htmlFor="expectedReturn">
+                  Rentabilidade Esperada (%)
+                </Label>
                 <Input
                   id="expectedReturn"
                   type="number"
@@ -301,7 +304,7 @@ export default function InvestmentsPage() {
       <Card style={{ background: "var(--card)", borderColor: "var(--border)" }}>
         <CardHeader>
           <CardTitle style={{ color: "var(--card-foreground)" }}>
-            Recent Income
+            Investimentos Recente
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -326,7 +329,13 @@ export default function InvestmentsPage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <span>
-                        {investmentTypeLabels[inc.description] ?? inc.description} - {inc.expectedReturn}%
+                        {inc.description && inc.description.trim() !== ""
+                          ? (investmentDescriptionLabel[inc.description] ??
+                            inc.description)
+                          : (investmentTypeLabels[inc.typeInvestments] ??
+                            inc.typeInvestments)}
+                        {" - "}
+                        {inc.expectedReturn}%
                       </span>
                     </div>
 
