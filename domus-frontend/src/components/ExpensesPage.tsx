@@ -301,7 +301,7 @@ export default function ExpensesPage() {
                   <Label htmlFor="duration">
                     {frequency === "Weekly" && "Number of weeks"}
                     {frequency === "Bi-weekly" && "Number of bi-weekly periods"}
-                    {frequency === "Monthly" && "Number of months"}
+                    {frequency === "Monthly" && "Número de parcelas"}
                     {frequency === "Quarterly" && "Number of quarters"}
                     {frequency === "Annually" && "Number of years"}
                   </Label>
