@@ -23,6 +23,7 @@ import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { FeedbackToast } from "./FeedbackToast";
 import { incomeCategoryLabels } from "../utils/labels/incomeCategoryLabels";
+import { incomeDescriptionLabel } from "../utils/labels/incomeDescriptionLabel";
 import { frequencyLabels } from "../utils/labels/frequencyLabels";
 
 export default function IncomePage() {
@@ -329,7 +330,13 @@ export default function IncomePage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <span>
-                        {incomeCategoryLabels[inc.category] ?? inc.category} - {frequencyLabels[inc.frequency] ?? inc.frequency}
+                        {inc.description && inc.description.trim() !== ""
+                          ? (incomeDescriptionLabel[inc.description] ??
+                            inc.description)
+                          : (incomeCategoryLabels[inc.category] ??
+                            inc.category)}
+                        {" - "}
+                        {frequencyLabels[inc.frequency] ?? inc.frequency}
                       </span>
                     </div>
 

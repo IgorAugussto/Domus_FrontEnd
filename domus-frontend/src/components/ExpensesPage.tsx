@@ -24,6 +24,7 @@ import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { FeedbackToast } from "./FeedbackToast";
 import { expenseCategoryLabels } from "../utils/labels/expenseCategoryLabels";
 import { frequencyLabels } from "../utils/labels/frequencyLabels";
+import { expenseDescriptionLabel } from "../utils/labels/expenseDescriptionLabel";
 
 const formatDateToISO = (date: string) => {
   if (!date) return "";
@@ -273,7 +274,7 @@ export default function ExpensesPage() {
                   </SelectTrigger>
                   <SelectContent className="select-content">
                     <SelectItem className="select-item" value="One-time">
-                      One-time
+                      Único
                     </SelectItem>
                     {/*<SelectItem className="select-item" value="Weekly">
                       Weekly
@@ -282,7 +283,7 @@ export default function ExpensesPage() {
                       Bi-weekly
                     </SelectItem>*/}
                     <SelectItem className="select-item" value="Monthly">
-                      Monthly
+                      Mensal
                     </SelectItem>
                     {/*<SelectItem className="select-item" value="Quarterly">
                       Quarterly
@@ -300,7 +301,7 @@ export default function ExpensesPage() {
                   <Label htmlFor="duration">
                     {frequency === "Weekly" && "Number of weeks"}
                     {frequency === "Bi-weekly" && "Number of bi-weekly periods"}
-                    {frequency === "Monthly" && "Number of months"}
+                    {frequency === "Monthly" && "Número de parcelas"}
                     {frequency === "Quarterly" && "Number of quarters"}
                     {frequency === "Annually" && "Number of years"}
                   </Label>
@@ -372,7 +373,13 @@ export default function ExpensesPage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <span>
-                        {expenseCategoryLabels[inc.category] ?? inc.category} - {frequencyLabels[inc.frequency] ?? inc.frequency}
+                        {inc.description && inc.description.trim() !== ""
+                          ? (expenseDescriptionLabel[inc.description] ??
+                            inc.description)
+                          : (expenseCategoryLabels[inc.category] ??
+                            inc.category)}
+                        {" - "}
+                        {frequencyLabels[inc.frequency] ?? inc.frequency}
                       </span>
                     </div>
 
