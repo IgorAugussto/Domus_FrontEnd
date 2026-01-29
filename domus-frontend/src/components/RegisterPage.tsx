@@ -56,14 +56,24 @@ export default function RegisterPage() {
       });
 
       navigate("/login");
-    } catch {
-      alert("Falha ao criar conta!");
+    } catch (error: any) {
+      if (error?.response?.status === 403) {
+        setToast({
+          message:
+            "Criação de contas desativada. Este ambiente está em modo demonstração.",
+          type: "error",
+        });
+      } else {
+        setToast({
+          message: "Falha ao criar conta. Tente novamente.",
+          type: "error",
+        });
+      }
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0B1C2D] via-[#0E2A47] to-[#123A63] relative overflow-hidden">
-      
       {/* shapes de fundo */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-500 rounded-full blur-3xl" />
@@ -83,7 +93,6 @@ export default function RegisterPage() {
 
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
-
             {/* NAME */}
             <div className="space-y-1">
               <Label htmlFor="name" className="text-slate-200 text-sm">
@@ -162,7 +171,6 @@ export default function RegisterPage() {
             >
               Criar conta
             </Button>
-
           </form>
         </CardContent>
       </Card>
