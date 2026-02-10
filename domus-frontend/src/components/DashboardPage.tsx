@@ -250,6 +250,8 @@ export function DashboardPage() {
       <g
         transform={`translate(${x - width / 2}, ${y})`}
         style={{ cursor: "pointer" }}
+        tabIndex={-1} // 🚫 impede foco
+        onMouseDown={(e) => e.preventDefault()} // 🚫 bloqueia foco no clique
         onClick={() => handleMonthClick(payload.value)}
       >
         {/* Fundo do "botão" */}
@@ -486,6 +488,10 @@ export function DashboardPage() {
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart
                 data={chartData}
+                tabIndex={-1} // 🚫 impede o gráfico de receber foco
+                onMouseDown={(state: any) => {
+                  state?.event?.preventDefault();
+                }}
                 onClick={(state: any) => {
                   // 🔒 Só permite clique no modo ANUAL
                   if (activeTab !== "ANUAL") return;
@@ -568,6 +574,7 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {expenseCategories.length > 0 && (
           <Card
+            className="card"
             style={{ background: "var(--card)", borderColor: "var(--border)" }}
           >
             <CardHeader>
@@ -577,13 +584,20 @@ export function DashboardPage() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={500}>
-                <PieChart>
+                <PieChart
+                  tabIndex={-1} // 🚫 impede o PieChart de receber foco
+                  onMouseDown={(state: any) => {
+                    state?.event?.preventDefault(); // 🚫 bloqueia foco no clique
+                  }}
+                >
                   <Pie
                     data={expenseCategories}
                     cx="50%"
                     cy="50%"
                     outerRadius={90}
                     dataKey="value"
+                    isAnimationActive={false} // 🚫 evita estado ativo visual
+                    focusable={false} // 🚫 impede foco no SVG do Pie
                     label={(entry) => {
                       const name =
                         typeof entry.name === "string" ? entry.name : "";

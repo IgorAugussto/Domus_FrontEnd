@@ -269,3 +269,32 @@ html {
 .dashboard-tab:active {
   transform: scale(0.97);
 }
+
+/* =============================== */
+/* REMOVE CONTORNO DOS GRÁFICOS DE PIZZA */
+/* =============================== */
+
+/* Remove foco de todos os elementos do PieChart */
+.recharts-pie:focus,
+.recharts-pie:focus-visible,
+.recharts-pie-sector:focus,
+.recharts-pie-sector:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove contorno branco dos setores do gráfico */
+.recharts-sector:focus,
+.recharts-sector:focus-visible {
+  outline: none !important;
+  stroke: none !important;
+}
+
+/* Impede qualquer elemento SVG de mostrar outline */
+svg *:focus,
+svg *:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+
