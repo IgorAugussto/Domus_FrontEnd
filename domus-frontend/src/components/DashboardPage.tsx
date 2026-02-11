@@ -50,19 +50,24 @@ export function DashboardPage() {
   const [monthlyData, setMonthlyData] = useState<MonthlyProjection[]>([]);
   const [yearlyData, setYearlyData] = useState<YearlyProjection[]>([]);
   const [activeTab, setActiveTab] = useState<"ANUAL" | "MENSAL">("ANUAL");
-  const [selectedMonth, setSelectedMonth] = useState<string>(
-    dayjs().format("YYYY-MM"),
-  );
+  // ✅ SOLUÇÃO: Usa função inicializadora para garantir recálculo
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    return dayjs().format("YYYY-MM");
+  });
   const [kpiIncome, setKpiIncome] = useState(0);
   const [kpiExpenses, setKpiExpenses] = useState(0);
   const [kpiInvestments, setKpiInvestments] = useState(0);
   const [kpiNetWorth, setKpiNetWorth] = useState(0);
   const [kpiSavingsRate, setKpiSavingsRate] = useState<number>(0);
-  
+
   // ← NOVO: Estados para a meta de gastos
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [spendingGoal, setSpendingGoal] = useState<number>(0);
   const [showGoalLine, setShowGoalLine] = useState(false);
+
+  const [selectedYear, setSelectedYear] = useState<number>(() => {
+    return dayjs().year(); // Ano atual
+  });
 
   const totalInvestments = useMemo(() => {
     return investments.reduce((acc, inv) => acc + Number(inv.value), 0);
@@ -106,7 +111,7 @@ export function DashboardPage() {
           investmentService.getTotal(),
           dashboardService.getSummary(),
           dashboardService.getMonthlyProjection(),
-          dashboardService.getYearlyProjection(),
+          dashboardService.getYearlyProjection(selectedYear),
         ]);
 
         setCosts(costData);
@@ -133,6 +138,12 @@ export function DashboardPage() {
 
     loadDashboardData();
   }, []);
+
+  // ✅ Garante que após F5 o mês volte para o atual
+  useEffect(() => {
+    const currentMonth = dayjs().format("YYYY-MM");
+    setSelectedMonth(currentMonth);
+  }, []); // Array vazio = executa apenas no mount
 
   useEffect(() => {
     if (!selectedMonth) return;
@@ -496,7 +507,7 @@ export function DashboardPage() {
                   ? "Visão Financeira Anual"
                   : "Visão Financeira Mensal"}
               </CardTitle>
-              
+
               <Button
                 onClick={handleToggleGoal}
                 className="cursor-pointer"
@@ -505,7 +516,7 @@ export function DashboardPage() {
                 style={
                   showGoalLine
                     ? {
-                        background: "#a855f7",
+                        background: "#06b6d4",
                         color: "white",
                       }
                     : {}
@@ -566,7 +577,7 @@ export function DashboardPage() {
                 {showGoalLine && spendingGoal > 0 && (
                   <ReferenceLine
                     y={spendingGoal}
-                    stroke="#a855f7"
+                    stroke="#06b6d4"
                     strokeDasharray="5 5"
                     strokeWidth={2}
                     label={{
@@ -575,7 +586,7 @@ export function DashboardPage() {
                         currency: "BRL",
                       })}`,
                       position: "insideTopRight",
-                      fill: "#a855f7",
+                      fill: "#06b6d4",
                       fontSize: 12,
                       fontWeight: 600,
                     }}
@@ -661,8 +672,8 @@ export function DashboardPage() {
                     }}
                   >
                     {expenseCategories.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
+                      <Cell
+                        key={`cell-${index}`}
                         fill={entry.color}
                         strokeWidth={0} // ← NOVO: Remove contorno branco
                       />
@@ -694,7 +705,8 @@ export function DashboardPage() {
             <ResponsiveContainer width="100%" height={500}>
               <PieChart
                 tabIndex={-1} // ← NOVO
-                onMouseDown={(state: any) => { // ← NOVO
+                onMouseDown={(state: any) => {
+                  // ← NOVO
                   state?.event?.preventDefault();
                 }}
               >
@@ -716,8 +728,8 @@ export function DashboardPage() {
                   }}
                 >
                   {investmentPortfolio.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
+                    <Cell
+                      key={`cell-${index}`}
                       fill={entry.color}
                       strokeWidth={0} // ← NOVO: Remove contorno branco
                     />
