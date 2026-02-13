@@ -29,7 +29,7 @@ export const dashboardService = {
 
   getYearlyProjection: async (year?: number): Promise<YearlyProjection[]> => {
     const params = year ? { year } : {};
-    const response = await api.get("/api/dashboard/projection/year", { params });
+    const response = await api.get("/dashboard/projection/year", { params });
     return response.data;
   },
 

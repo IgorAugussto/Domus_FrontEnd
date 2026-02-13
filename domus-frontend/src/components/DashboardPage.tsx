@@ -16,7 +16,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine, // ← NOVO
+  ReferenceLine,
 } from "recharts";
 import {
   TrendingUp,
@@ -33,14 +33,13 @@ import { costService } from "../service/costService";
 import { incomeService } from "../service/incomeService";
 import { investmentService } from "../service/investmentService";
 import { dashboardService } from "../service/dashboardService";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { MonthlyProjection } from "../service/dashboardService";
 import type { YearlyProjection } from "../service/dashboardService";
-import { useMemo } from "react";
 import { investmentTypeLabels } from "../utils/labels/investmentTypeLabels";
 import { expenseCategoryLabels } from "../utils/labels/expenseCategoryLabels";
-import { SpendingGoalModal } from "./SpendingGoalModal"; // ← NOVO
-import { Button } from "../ui-components/button"; // ← NOVO
+import { SpendingGoalModal } from "./SpendingGoalModal";
+import { Button } from "../ui-components/button";
 
 export function DashboardPage() {
   const [costs, setCosts] = useState<Cost[]>([]);
@@ -50,24 +49,27 @@ export function DashboardPage() {
   const [monthlyData, setMonthlyData] = useState<MonthlyProjection[]>([]);
   const [yearlyData, setYearlyData] = useState<YearlyProjection[]>([]);
   const [activeTab, setActiveTab] = useState<"ANUAL" | "MENSAL">("ANUAL");
-  // ✅ SOLUÇÃO: Usa função inicializadora para garantir recálculo
+  
+  // ✅ CORRIGIDO: Sempre inicia com o mês atual
   const [selectedMonth, setSelectedMonth] = useState<string>(() => {
     return dayjs().format("YYYY-MM");
   });
+  
+  // ✅ NOVO: Controle de ano
+  const [selectedYear, setSelectedYear] = useState<number>(() => {
+    return dayjs().year();
+  });
+  
   const [kpiIncome, setKpiIncome] = useState(0);
   const [kpiExpenses, setKpiExpenses] = useState(0);
   const [kpiInvestments, setKpiInvestments] = useState(0);
   const [kpiNetWorth, setKpiNetWorth] = useState(0);
   const [kpiSavingsRate, setKpiSavingsRate] = useState<number>(0);
 
-  // ← NOVO: Estados para a meta de gastos
+  // Estados para a meta de gastos
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [spendingGoal, setSpendingGoal] = useState<number>(0);
   const [showGoalLine, setShowGoalLine] = useState(false);
-
-  const [selectedYear, setSelectedYear] = useState<number>(() => {
-    return dayjs().year(); // Ano atual
-  });
 
   const totalInvestments = useMemo(() => {
     return investments.reduce((acc, inv) => acc + Number(inv.value), 0);
@@ -87,6 +89,7 @@ export function DashboardPage() {
     }
   };
 
+  // ✅ CORRIGIDO: useEffect principal com selectedYear como dependência
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
@@ -111,7 +114,7 @@ export function DashboardPage() {
           investmentService.getTotal(),
           dashboardService.getSummary(),
           dashboardService.getMonthlyProjection(),
-          dashboardService.getYearlyProjection(selectedYear),
+          dashboardService.getYearlyProjection(selectedYear), // ✅ PASSA O ANO
         ]);
 
         setCosts(costData);
@@ -123,7 +126,7 @@ export function DashboardPage() {
 
         await loadMonthlySummary(selectedMonth);
 
-        // ← NOVO: Carregar meta salva do localStorage
+        // Carregar meta salva do localStorage
         const savedGoal = localStorage.getItem("spendingGoal");
         if (savedGoal) {
           setSpendingGoal(Number(savedGoal));
@@ -137,13 +140,13 @@ export function DashboardPage() {
     };
 
     loadDashboardData();
-  }, []);
+  }, [selectedYear, selectedMonth]); // ✅ CORRIGIDO: Adicionou dependências
 
-  // ✅ Garante que após F5 o mês volte para o atual
+  // ✅ NOVO: Garante que o mês atual seja selecionado após reload
   useEffect(() => {
     const currentMonth = dayjs().format("YYYY-MM");
     setSelectedMonth(currentMonth);
-  }, []); // Array vazio = executa apenas no mount
+  }, []);
 
   useEffect(() => {
     if (!selectedMonth) return;
@@ -170,7 +173,7 @@ export function DashboardPage() {
     setSelectedMonth(month);
   };
 
-  // ← NOVO: Funções para gerenciar a meta de gastos
+  // Funções para gerenciar a meta de gastos
   const handleSaveGoal = (goal: number) => {
     setSpendingGoal(goal);
     setShowGoalLine(true);
@@ -499,7 +502,6 @@ export function DashboardPage() {
         <Card
           style={{ background: "var(--card)", borderColor: "var(--border)" }}
         >
-          {/* ← NOVO: Header com botão de meta */}
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle style={{ color: "var(--card-foreground)" }}>
@@ -573,7 +575,7 @@ export function DashboardPage() {
                   ]}
                 />
 
-                {/* ← NOVO: Linha de meta de gastos */}
+                {/* Linha de meta de gastos */}
                 {showGoalLine && spendingGoal > 0 && (
                   <ReferenceLine
                     y={spendingGoal}
@@ -596,7 +598,6 @@ export function DashboardPage() {
                 <Area
                   type="monotone"
                   dataKey="income"
-                  //stackId="1"
                   stroke="var(--chart-1)"
                   fill="var(--chart-1)"
                   fillOpacity={0.6}
@@ -605,7 +606,6 @@ export function DashboardPage() {
                 <Area
                   type="monotone"
                   dataKey="expenses"
-                  //stackId="2"
                   stroke="var(--chart-2)"
                   fill="var(--chart-2)"
                   fillOpacity={0.6}
@@ -614,7 +614,6 @@ export function DashboardPage() {
                 <Area
                   type="monotone"
                   dataKey="investments"
-                  //stackId="3"
                   stroke="var(--chart-3)"
                   fill="var(--chart-3)"
                   fillOpacity={0.6}
@@ -675,7 +674,7 @@ export function DashboardPage() {
                       <Cell
                         key={`cell-${index}`}
                         fill={entry.color}
-                        strokeWidth={0} // ← NOVO: Remove contorno branco
+                        strokeWidth={0}
                       />
                     ))}
                   </Pie>
@@ -704,9 +703,8 @@ export function DashboardPage() {
           <CardContent>
             <ResponsiveContainer width="100%" height={500}>
               <PieChart
-                tabIndex={-1} // ← NOVO
+                tabIndex={-1}
                 onMouseDown={(state: any) => {
-                  // ← NOVO
                   state?.event?.preventDefault();
                 }}
               >
@@ -716,8 +714,8 @@ export function DashboardPage() {
                   cy="50%"
                   outerRadius={90}
                   dataKey="value"
-                  isAnimationActive={false} // ← NOVO
-                  focusable={false} // ← NOVO
+                  isAnimationActive={false}
+                  focusable={false}
                   label={(entry) => {
                     const name =
                       typeof entry.name === "string" ? entry.name : "";
@@ -731,7 +729,7 @@ export function DashboardPage() {
                     <Cell
                       key={`cell-${index}`}
                       fill={entry.color}
-                      strokeWidth={0} // ← NOVO: Remove contorno branco
+                      strokeWidth={0}
                     />
                   ))}
                 </Pie>
@@ -749,7 +747,7 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      {/* ← NOVO: Modal de meta de gastos */}
+      {/* Modal de meta de gastos */}
       <SpendingGoalModal
         open={showGoalModal}
         currentGoal={spendingGoal}
