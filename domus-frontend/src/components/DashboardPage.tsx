@@ -16,6 +16,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import {
   TrendingUp,
@@ -32,30 +33,44 @@ import { costService } from "../service/costService";
 import { incomeService } from "../service/incomeService";
 import { investmentService } from "../service/investmentService";
 import { dashboardService } from "../service/dashboardService";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { MonthlyProjection } from "../service/dashboardService";
 import type { YearlyProjection } from "../service/dashboardService";
-import { useMemo } from "react";
 import { investmentTypeLabels } from "../utils/labels/investmentTypeLabels";
 import { expenseCategoryLabels } from "../utils/labels/expenseCategoryLabels";
+import { SpendingGoalModal } from "./SpendingGoalModal";
+import { Button } from "../ui-components/button";
 
 export function DashboardPage() {
   const [costs, setCosts] = useState<Cost[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
-  //const [totalInvestments, /*setTotalInvestments*/] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [monthlyData, setMonthlyData] = useState<MonthlyProjection[]>([]);
   const [yearlyData, setYearlyData] = useState<YearlyProjection[]>([]);
   const [activeTab, setActiveTab] = useState<"ANUAL" | "MENSAL">("ANUAL");
-  const [selectedMonth, setSelectedMonth] = useState<string>(
-    dayjs().format("YYYY-MM"),
-  );
+  
+  // ✅ CORRIGIDO: Sempre inicia com o mês atual
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    return dayjs().format("YYYY-MM");
+  });
+  
+  // ✅ NOVO: Controle de ano
+  const [selectedYear, setSelectedYear] = useState<number>(() => {
+    return dayjs().year();
+  });
+  
   const [kpiIncome, setKpiIncome] = useState(0);
   const [kpiExpenses, setKpiExpenses] = useState(0);
   const [kpiInvestments, setKpiInvestments] = useState(0);
   const [kpiNetWorth, setKpiNetWorth] = useState(0);
   const [kpiSavingsRate, setKpiSavingsRate] = useState<number>(0);
+
+  // Estados para a meta de gastos
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [spendingGoal, setSpendingGoal] = useState<number>(0);
+  const [showGoalLine, setShowGoalLine] = useState(false);
+
   const totalInvestments = useMemo(() => {
     return investments.reduce((acc, inv) => acc + Number(inv.value), 0);
   }, [investments]);
@@ -74,6 +89,7 @@ export function DashboardPage() {
     }
   };
 
+  // ✅ CORRIGIDO: useEffect principal com selectedYear como dependência
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
@@ -97,27 +113,25 @@ export function DashboardPage() {
           costService.getTotal(),
           investmentService.getTotal(),
           dashboardService.getSummary(),
-          dashboardService.getMonthlyProjection(), // TAB MENSAL
-          dashboardService.getYearlyProjection(), // TAB ANUAL
+          dashboardService.getMonthlyProjection(),
+          dashboardService.getYearlyProjection(selectedYear), // ✅ PASSA O ANO
         ]);
 
-        /* ============================
-         LISTAS BASE
-      ============================ */
         setCosts(costData);
         setIncomes(incomeData);
         setInvestments(investmentData);
 
-        /* ============================
-         DADOS DOS GRÁFICOS
-      ============================ */
         setMonthlyData(monthlyProjectionData);
         setYearlyData(yearlyProjectionData);
 
-        /* ============================
-         🔥 KPIs MENSAIS (NOVO)
-      ============================ */
         await loadMonthlySummary(selectedMonth);
+
+        // Carregar meta salva do localStorage
+        const savedGoal = localStorage.getItem("spendingGoal");
+        if (savedGoal) {
+          setSpendingGoal(Number(savedGoal));
+          setShowGoalLine(true);
+        }
       } catch (err) {
         console.error("Erro ao carregar dados do dashboard:", err);
       } finally {
@@ -126,6 +140,12 @@ export function DashboardPage() {
     };
 
     loadDashboardData();
+  }, [selectedYear, selectedMonth]); // ✅ CORRIGIDO: Adicionou dependências
+
+  // ✅ NOVO: Garante que o mês atual seja selecionado após reload
+  useEffect(() => {
+    const currentMonth = dayjs().format("YYYY-MM");
+    setSelectedMonth(currentMonth);
   }, []);
 
   useEffect(() => {
@@ -148,13 +168,25 @@ export function DashboardPage() {
     loadMonthlySummary();
   }, [selectedMonth]);
 
-  /* ============================
-     CLIQUE NO GRÁFICO
-  ============================ */
-
   const handleMonthClick = (month: string) => {
     if (activeTab !== "ANUAL") return;
     setSelectedMonth(month);
+  };
+
+  // Funções para gerenciar a meta de gastos
+  const handleSaveGoal = (goal: number) => {
+    setSpendingGoal(goal);
+    setShowGoalLine(true);
+    setShowGoalModal(false);
+    localStorage.setItem("spendingGoal", goal.toString());
+  };
+
+  const handleToggleGoal = () => {
+    if (showGoalLine) {
+      setShowGoalLine(false);
+    } else {
+      setShowGoalModal(true);
+    }
   };
 
   const expectedReturnAverage = useMemo(() => {
@@ -178,11 +210,9 @@ export function DashboardPage() {
     );
   }
 
-  // Categorias de despesas
   const categoryTotals: Record<string, number> = {};
   costs.forEach((c) => {
-    if (!c.category) return; // <-- Impede undefined
-
+    if (!c.category) return;
     categoryTotals[c.category] = (categoryTotals[c.category] || 0) + c.value;
   });
 
@@ -201,15 +231,14 @@ export function DashboardPage() {
       return {
         name,
         value,
-        color: palette[safeI % palette.length], // 100% seguro
+        color: palette[safeI % palette.length],
       };
     },
   );
 
-  // Portfolio de investimentos
   const investmentTypes: Record<string, number> = {};
   investments.forEach((i) => {
-    if (!i.typeInvestments) return; // <-- Impede undefined
+    if (!i.typeInvestments) return;
 
     investmentTypes[i.typeInvestments] =
       (investmentTypes[i.typeInvestments] || 0) + i.value;
@@ -225,14 +254,12 @@ export function DashboardPage() {
           : "0";
 
       const index = Object.keys(investmentTypes).indexOf(name);
-
-      // Garante que nunca será undefined
       const safeIndex = index >= 0 ? index : 0;
 
       return {
         name,
         value: Number(percentage),
-        color: colors[safeIndex % colors.length], // ← CORRIGIDO
+        color: colors[safeIndex % colors.length],
       };
     },
   );
@@ -250,9 +277,10 @@ export function DashboardPage() {
       <g
         transform={`translate(${x - width / 2}, ${y})`}
         style={{ cursor: "pointer" }}
+        tabIndex={-1}
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => handleMonthClick(payload.value)}
       >
-        {/* Fundo do "botão" */}
         <rect
           width={width}
           height={height}
@@ -263,7 +291,6 @@ export function DashboardPage() {
           strokeWidth={1}
         />
 
-        {/* Texto */}
         <text
           x={width / 2}
           y={height / 2 + 4}
@@ -476,18 +503,42 @@ export function DashboardPage() {
           style={{ background: "var(--card)", borderColor: "var(--border)" }}
         >
           <CardHeader>
-            <CardTitle style={{ color: "var(--card-foreground)" }}>
-              {activeTab === "ANUAL"
-                ? "Visão Financeira Anual"
-                : "Visão Financeira Mensal"}
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle style={{ color: "var(--card-foreground)" }}>
+                {activeTab === "ANUAL"
+                  ? "Visão Financeira Anual"
+                  : "Visão Financeira Mensal"}
+              </CardTitle>
+
+              <Button
+                onClick={handleToggleGoal}
+                className="cursor-pointer"
+                variant={showGoalLine ? "default" : "outline"}
+                size="sm"
+                style={
+                  showGoalLine
+                    ? {
+                        background: "#06b6d4",
+                        color: "white",
+                      }
+                    : {}
+                }
+              >
+                <Target className="h-4 w-4 mr-2" />
+                {showGoalLine ? "Meta Ativa" : "Definir Meta"}
+              </Button>
+            </div>
           </CardHeader>
+
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart
                 data={chartData}
+                tabIndex={-1}
+                onMouseDown={(state: any) => {
+                  state?.event?.preventDefault();
+                }}
                 onClick={(state: any) => {
-                  // 🔒 Só permite clique no modo ANUAL
                   if (activeTab !== "ANUAL") return;
 
                   const payload = state?.activePayload?.[0]?.payload;
@@ -524,10 +575,29 @@ export function DashboardPage() {
                   ]}
                 />
 
+                {/* Linha de meta de gastos */}
+                {showGoalLine && spendingGoal > 0 && (
+                  <ReferenceLine
+                    y={spendingGoal}
+                    stroke="#06b6d4"
+                    strokeDasharray="5 5"
+                    strokeWidth={2}
+                    label={{
+                      value: `Meta: ${spendingGoal.toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}`,
+                      position: "insideTopRight",
+                      fill: "#06b6d4",
+                      fontSize: 12,
+                      fontWeight: 600,
+                    }}
+                  />
+                )}
+
                 <Area
                   type="monotone"
                   dataKey="income"
-                  stackId="1"
                   stroke="var(--chart-1)"
                   fill="var(--chart-1)"
                   fillOpacity={0.6}
@@ -536,7 +606,6 @@ export function DashboardPage() {
                 <Area
                   type="monotone"
                   dataKey="expenses"
-                  stackId="2"
                   stroke="var(--chart-2)"
                   fill="var(--chart-2)"
                   fillOpacity={0.6}
@@ -545,7 +614,6 @@ export function DashboardPage() {
                 <Area
                   type="monotone"
                   dataKey="investments"
-                  stackId="3"
                   stroke="var(--chart-3)"
                   fill="var(--chart-3)"
                   fillOpacity={0.6}
@@ -568,6 +636,7 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {expenseCategories.length > 0 && (
           <Card
+            className="card"
             style={{ background: "var(--card)", borderColor: "var(--border)" }}
           >
             <CardHeader>
@@ -577,13 +646,20 @@ export function DashboardPage() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={500}>
-                <PieChart>
+                <PieChart
+                  tabIndex={-1}
+                  onMouseDown={(state: any) => {
+                    state?.event?.preventDefault();
+                  }}
+                >
                   <Pie
                     data={expenseCategories}
                     cx="50%"
                     cy="50%"
                     outerRadius={90}
                     dataKey="value"
+                    isAnimationActive={false}
+                    focusable={false}
                     label={(entry) => {
                       const name =
                         typeof entry.name === "string" ? entry.name : "";
@@ -595,7 +671,11 @@ export function DashboardPage() {
                     }}
                   >
                     {expenseCategories.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        strokeWidth={0}
+                      />
                     ))}
                   </Pie>
 
@@ -612,50 +692,6 @@ export function DashboardPage() {
           </Card>
         )}
 
-        {/*<Card
-          style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-          <CardHeader>
-            <CardTitle style={{ color: "var(--card-foreground)" }}>
-              Savings Goals
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div
-                className="flex justify-between mb-2 text-sm"
-                style={{ color: "var(--card-foreground)" }}
-              >
-                <span>Emergency Fund</span>
-                <span>$8,000 / $10,000</span>
-              </div>
-              <Progress value={80} className="h-2" />
-            </div>
-            <div>
-              <div
-                className="flex justify-between mb-2 text-sm"
-                style={{ color: "var(--card-foreground)" }}
-              >
-                <span>Vacation Fund</span>
-                <span>$2,400 / $5,000</span>
-              </div>
-              <Progress value={48} className="h-2" />
-            </div>
-            <div>
-              <div
-                className="flex justify-between mb-2 text-sm"
-                style={{ color: "var(--card-foreground)" }}
-              >
-                <span>Investment Goal</span>
-                <span>${totalInvestments.toFixed(0)} / $15,000</span>
-              </div>
-              <Progress
-                value={(totalInvestments / 15000) * 100}
-                className="h-2"
-              />
-            </div>
-          </CardContent>
-        </Card>*/}
-
         <Card
           style={{ background: "var(--card)", borderColor: "var(--border)" }}
         >
@@ -666,13 +702,20 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={500}>
-              <PieChart>
+              <PieChart
+                tabIndex={-1}
+                onMouseDown={(state: any) => {
+                  state?.event?.preventDefault();
+                }}
+              >
                 <Pie
                   data={investmentPortfolio}
                   cx="50%"
                   cy="50%"
                   outerRadius={90}
                   dataKey="value"
+                  isAnimationActive={false}
+                  focusable={false}
                   label={(entry) => {
                     const name =
                       typeof entry.name === "string" ? entry.name : "";
@@ -683,7 +726,11 @@ export function DashboardPage() {
                   }}
                 >
                   {investmentPortfolio.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.color}
+                      strokeWidth={0}
+                    />
                   ))}
                 </Pie>
 
@@ -700,88 +747,13 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      {/*<Card
-        style={{
-          background: "var(--card)",
-          borderColor:
-            parseFloat(savingsRate) >= 20
-              ? "var(--financial-success)"
-              : "var(--financial-danger)",
-        }}>
-        <CardHeader
-          style={{
-            background:
-              parseFloat(savingsRate) >= 20
-                ? "var(--financial-success-light)"
-                : "var(--financial-danger-light)",
-          }}
-        >
-          <CardTitle
-            className="flex items-center gap-2"
-            style={{ color: "var(--card-foreground)" }}
-          >
-            <AlertCircle className="h-5 w-5" />
-            Financial Insights
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {parseFloat(savingsRate) >= 20 ? (
-            <div
-              className="p-3 rounded-lg"
-              style={{
-                backgroundColor: "var(--financial-success-light)",
-                border: `1px solid var(--financial-success)`,
-                color: "var(--financial-success)",
-              }}
-            >
-              <p>
-                <strong>Great job!</strong> Your savings rate of {savingsRate}%
-                is above the recommended 20%.
-              </p>
-            </div>
-          ) : (
-            <div
-              className="p-3 rounded-lg"
-              style={{
-                backgroundColor: "var(--financial-danger-light)",
-                border: `1px solid var(--financial-danger)`,
-                color: "var(--financial-danger)",
-              }}
-            >
-              <p>
-                <strong>Attention:</strong> Your savings rate is {savingsRate}%.
-                Try to reach at least 20%.
-              </p>
-            </div>
-          )}
-          <div
-            className="p-3 rounded-lg"
-            style={{
-              backgroundColor: "var(--financial-trust-light)",
-              border: `1px solid var(--financial-trust)`,
-              color: "var(--financial-trust)",
-            }}
-          >
-            <p>
-              <strong>Investment Performance:</strong> Your portfolio has gained
-              ${investmentGains.toFixed(2)} (+5.7%) this period.
-            </p>
-          </div>
-          <div
-            className="p-3 rounded-lg"
-            style={{
-              backgroundColor: "var(--financial-neutral)",
-              border: `1px solid var(--border)`,
-              color: "var(--card-foreground)",
-            }}
-          >
-            <p>
-              <strong>Recommendation:</strong> Consider increasing your
-              emergency fund to reach the $10,000 goal.
-            </p>
-          </div>
-        </CardContent>
-      </Card>*/}
+      {/* Modal de meta de gastos */}
+      <SpendingGoalModal
+        open={showGoalModal}
+        currentGoal={spendingGoal}
+        onSave={handleSaveGoal}
+        onCancel={() => setShowGoalModal(false)}
+      />
     </div>
   );
 }

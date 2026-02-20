@@ -31,7 +31,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0B1C2D] via-[#0E2A47] to-[#123A63] relative overflow-hidden">
-      
       {/* shapes de fundo (estilo do print) */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-500 rounded-full blur-3xl" />
@@ -50,8 +49,19 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent>
+          {/* DEMO LOGIN INFO */}
+          <div className="mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm text-blue-200">
+            <strong className="block text-blue-300">Conta demo</strong>
+            <span>Email:</span> demo@domus.app
+            <br />
+            <span>Senha:</span> demo123
+            <br />
+            <span className="block mt-2 text-xs text-blue-300/80">
+              Dados reiniciados periodicamente
+            </span>
+          </div>
+
           <form onSubmit={handleLogin} className="space-y-4">
-            
             {/* EMAIL */}
             <div className="space-y-1">
               <Label htmlFor="email" className="text-slate-200 text-sm">
@@ -124,7 +134,6 @@ export default function LoginPage() {
                 Esqueci minha senha
               </span>
             </div>
-
           </form>
         </CardContent>
       </Card>
