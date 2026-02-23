@@ -56,7 +56,7 @@ export function DashboardPage() {
   });
   
   // ✅ NOVO: Controle de ano
-  const [selectedYear, setSelectedYear] = useState<number>(() => {
+  const [selectedYear,] = useState<number>(() => {
     return dayjs().year();
   });
   
