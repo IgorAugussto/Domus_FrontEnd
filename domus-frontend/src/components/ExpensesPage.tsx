@@ -49,6 +49,9 @@ export default function ExpensesPage() {
     message: string;
     type: "success" | "error";
   } | null>(null);
+  const [filter, setFilter] = useState<string>("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   useEffect(() => {
     loadCosts();
@@ -155,6 +158,18 @@ export default function ExpensesPage() {
       alert("Erro ao editar cost.");
     }
   };
+
+  const filteredCosts = costs.filter((cost) => {
+    if (filter === "ALL") return true;
+    return cost.frequency === filter;
+  });
+
+  const totalPages = Math.ceil(filteredCosts.length / itemsPerPage);
+
+  const paginatedCosts = filteredCosts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   return (
     <div className="space-y-6">
@@ -346,10 +361,20 @@ export default function ExpensesPage() {
 
       {/* LISTA DE DESPESAS */}
       <Card style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-        <CardHeader>
+        <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle style={{ color: "var(--card-foreground)" }}>
             Despesas Recentes
           </CardTitle>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Filtrar" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Todas</SelectItem>
+              <SelectItem value="One-time">Único</SelectItem>
+              <SelectItem value="Monthly">Mensal</SelectItem>
+            </SelectContent>
+          </Select>
         </CardHeader>
         <CardContent>
           {costs.length === 0 ? (
@@ -361,7 +386,7 @@ export default function ExpensesPage() {
             </p>
           ) : (
             <ul className="space-y-3">
-              {costs.map((inc: any) => (
+              {paginatedCosts.map((inc: any) => (
                 <li
                   key={inc.id}
                   className="p-3 rounded-lg border"
@@ -417,6 +442,25 @@ export default function ExpensesPage() {
                 </li>
               ))}
             </ul>
+          )}
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-4 gap-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1 rounded ${
+                      currentPage === page
+                        ? "bg-red-500 text-white"
+                        : "bg-gray-200"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
