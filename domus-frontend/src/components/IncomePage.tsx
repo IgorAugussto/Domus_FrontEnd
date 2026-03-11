@@ -279,7 +279,7 @@ export default function IncomePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Descrição (opcional)</Label>
+              <Label htmlFor="description">Descrição (opcional...)</Label>
               <Textarea
                 id="description"
                 placeholder="Detalhes adicionais sobre a renda"
@@ -295,7 +295,7 @@ export default function IncomePage() {
               className="w-full"
               style={{ background: "var(--financial-income)", color: "white" }}
             >
-              Adicionar Renda...
+              Adicionar Renda
             </Button>
           </form>
         </CardContent>
