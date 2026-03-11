@@ -1,0 +1,36 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install  # Sem cd, raiz é o frontend!
+
+    - name: Build frontend
+      run: npm run build
+
+    - name: Build Docker Image
+      run: docker build -t seuusername/domus-frontend:latest .  # Adicione um Dockerfile na raiz se quiser
+
+    - name: Login no Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Push Docker Image
+      run: docker push seuusername/domus-frontend:latest
