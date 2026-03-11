@@ -295,7 +295,7 @@ export default function IncomePage() {
               className="w-full"
               style={{ background: "var(--financial-income)", color: "white" }}
             >
-              Adicionar Renda
+              Adicionar Renda...
             </Button>
           </form>
         </CardContent>
