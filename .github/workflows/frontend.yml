@@ -39,4 +39,4 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Push Docker Image
-      run: docker push seuusername/domus-frontend:latest
+      run: docker push igoraugusto/domus-frontend:latest
