@@ -16,16 +16,20 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await authService.login({ email, password });
       navigate("/dashboard");
     } catch {
       alert("Login falhou!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -137,6 +141,20 @@ export default function LoginPage() {
           </form>
         </CardContent>
       </Card>
+      {loading && (
+      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0B1C2D]/80 backdrop-blur-sm">
+        
+        {/* Spinner */}
+        <div className="animate-spin rounded-full h-12 w-12 border-2 border-blue-300 border-t-transparent"></div>
+
+        {/* Texto */}
+        <p className="mt-6 text-center text-blue-100 text-sm max-w-xs">
+          🚀 Iniciando servidor...<br />
+          Isso pode levar alguns segundos na primeira vez.
+        </p>
+      </div>
+    )}
+
     </div>
   );
 }
