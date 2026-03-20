@@ -35,8 +35,8 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-  api.get("/health").catch(() => {});
-}, []);
+    api.get("/health").catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0B1C2D] via-[#0E2A47] to-[#123A63] relative overflow-hidden">
@@ -129,9 +129,10 @@ export default function LoginPage() {
             {/* BUTTON */}
             <Button
               type="submit"
-              className="w-full h-10 bg-blue-600 hover:bg-blue-700 transition-colors"
+              disabled={loading}
+              className="w-full h-10 bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              Login
+              {loading ? "Entrando..." : "Login"}
             </Button>
 
             {/* FORGOT PASSWORD */}
