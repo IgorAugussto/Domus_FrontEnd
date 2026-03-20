@@ -129,10 +129,17 @@ export default function LoginPage() {
             {/* BUTTON */}
             <Button
               type="submit"
-              disabled={loading}
-              className="w-full h-10 bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="w-full h-10 bg-blue-600 hover:bg-blue-700 transition-colors"
             >
-              {loading ? "Entrando..." : "Login"}
+              {loading && (
+                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/70">
+                  <div className="animate-spin rounded-full h-10 w-10 border-2 border-white border-t-transparent"></div>
+
+                  <p className="mt-4 text-white text-sm text-center">
+                    Conectando ao servidor...
+                  </p>
+                </div>
+              )}
             </Button>
 
             {/* FORGOT PASSWORD */}
