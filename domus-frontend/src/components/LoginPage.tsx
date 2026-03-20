@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../ui-components/button";
 import { Input } from "../ui-components/input";
 import { Label } from "../ui-components/label";
@@ -11,6 +11,7 @@ import {
   CardDescription,
 } from "../ui-components/card";
 import { useNavigate } from "react-router-dom";
+import api from "../lib/api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -32,6 +33,10 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+  api.get("/health").catch(() => {});
+}, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0B1C2D] via-[#0E2A47] to-[#123A63] relative overflow-hidden">
