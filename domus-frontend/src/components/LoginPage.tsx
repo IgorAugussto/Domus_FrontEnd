@@ -34,9 +34,9 @@ export default function LoginPage() {
     }
   };
 
-  useEffect(() => {
+  /*useEffect(() => {
     api.get("/health").catch(() => {});
-  }, []);
+  }, []);*/
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0B1C2D] via-[#0E2A47] to-[#123A63] relative overflow-hidden">
