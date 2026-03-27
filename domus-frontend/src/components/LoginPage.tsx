@@ -11,7 +11,6 @@ import {
   CardDescription,
 } from "../ui-components/card";
 import { useNavigate } from "react-router-dom";
-import api from "../lib/api";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
