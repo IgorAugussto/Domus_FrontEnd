@@ -4,7 +4,7 @@ import { DollarSign, TrendingUp, LogOut, Wallet, BarChart3, Sun, Moon } from 'lu
 import { useTheme } from '../hooks/useTheme';
 import { useLocation } from "react-router-dom";
 
-type Page = 'dashboard' | 'income' | 'expenses' | 'investments';
+type Page = 'dashboard' | 'income' | 'expenses' | 'investments' | 'payments';
 
 interface NavigationProps {
   onPageChange: (page: Page) => void;

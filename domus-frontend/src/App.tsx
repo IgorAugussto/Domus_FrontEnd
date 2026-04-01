@@ -9,6 +9,7 @@ import InvestmentsPage from "./components/InvestmentsPage";
 import LoginPage from "./components/LoginPage";
 import PrivateLayout from "./layouts/PrivateLayout";
 import RegisterPage from "./components/RegisterPage";
+import { Payments } from "./components/Payments";
 
 
 
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/income" element={<IncomePage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/investments" element={<InvestmentsPage />} />
+          <Route path="/payments" element={<Payments />} />
         </Route>
       </Routes>
     </AuthProvider>
