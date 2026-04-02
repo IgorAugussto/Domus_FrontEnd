@@ -10,8 +10,8 @@ export interface Cost {
   category: string;
   frequency: string;
   durationInMonths: number;
-  paymentType: PaymentType; // ✅ adicionado
-  paid: boolean;            // ✅ adicionado
+  paymentType: PaymentType;
+  paid: boolean;
 }
 
 export const costService = {
@@ -23,8 +23,8 @@ export const costService = {
       category: data.category,
       frequency: data.frequency,
       durationInMonths: data.durationInMonths,
-      paymentType: data.paymentType, // ✅ adicionado
-      paid: data.paid ?? false,      // ✅ adicionado
+      paymentType: data.paymentType,
+      paid: data.paid ?? false,
     });
   },
 
@@ -40,14 +40,14 @@ export const costService = {
 
   update: async (id: number, data: any) => {
     return api.put(`/costs/${id}`, {
-      value: data.amount,
+      value: data.value ?? data.amount, // ✅ corrigido — funciona para o Payments e o ExpensesPage
       description: data.description,
       startDate: data.startDate,
       category: data.category,
       frequency: data.frequency,
       durationInMonths: data.durationInMonths,
-      paymentType: data.paymentType, // ✅ adicionado
-      paid: data.paid,               // ✅ adicionado
+      paymentType: data.paymentType,
+      paid: data.paid,
     });
   },
 

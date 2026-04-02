@@ -1,6 +1,6 @@
 // src/components/Navigation.tsx
 import { Button } from '../ui-components/button';
-import { DollarSign, TrendingUp, LogOut, Wallet, BarChart3, Sun, Moon } from 'lucide-react';
+import { DollarSign, TrendingUp, LogOut, Wallet, BarChart3, Sun, Moon, CreditCard } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useLocation } from "react-router-dom";
 
@@ -15,7 +15,6 @@ export default function Navigation({ onPageChange, onLogout }: NavigationProps) 
   const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
 
-  // Detecta automaticamente a página atual
   const currentPage = pathname.replace("/", "") as Page;
 
   return (
@@ -74,12 +73,21 @@ export default function Navigation({ onPageChange, onLogout }: NavigationProps) 
               <TrendingUp className="h-4 w-4" />
               Investimento
             </Button>
+
+            {/* ✅ Botão Pagamentos */}
+            <Button
+              variant={currentPage === 'payments' ? 'navActivePayments' : 'navButton'}
+              onClick={() => onPageChange('payments')}
+              className="flex items-center gap-2 transition-all"
+            >
+              <CreditCard className="h-4 w-4" />
+              Pagamentos
+            </Button>
           </div>
         </div>
 
         {/* Tema + Logout */}
         <div className="flex items-center gap-2">
-          {/* Modo Claro/Escuro */}
           <Button
             variant="ghost"
             size="icon"
@@ -93,7 +101,6 @@ export default function Navigation({ onPageChange, onLogout }: NavigationProps) 
             )}
           </Button>
 
-          {/* Logout */}
           <Button
             variant="ghost"
             onClick={onLogout}
