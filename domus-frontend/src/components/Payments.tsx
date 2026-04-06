@@ -454,7 +454,6 @@ export function Payments() {
   const grandTotal = paymentExpenses.reduce((acc, e) => acc + Number(e.value), 0);
   const pendingTotal = paymentExpenses.filter((e) => !e.paid).reduce((acc, e) => acc + Number(e.value), 0);
   const paidTotal = grandTotal - pendingTotal;
-  const typesWithItems = (Object.keys(grouped) as PaymentType[]).filter((t) => grouped[t].length > 0);
 
   const filterOptions: {
     key: "ALL" | "PENDING" | "PAID";
