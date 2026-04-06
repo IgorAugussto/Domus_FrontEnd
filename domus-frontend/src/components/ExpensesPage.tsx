@@ -38,6 +38,7 @@ export default function ExpensesPage() {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [costs, setCosts] = useState<any[]>([]);
   const [frequency, setFrequency] = useState("");
+  const [paymentType, setPaymentType] = useState("");
   const [duration, setDuration] = useState<number | null>(null);
   const [showDurationInput, setShowDurationInput] = useState(false);
   const [selectedCost, setSelectedCost] = useState<any>(null);
@@ -97,6 +98,9 @@ export default function ExpensesPage() {
         category,
         frequency,
         durationInMonths: frequency === "One-time" ? 1 : duration,
+        paymentType,        // ✅ adicionado
+        paid: false,        // ✅ toda despesa nova começa como não paga
+
       });
 
       await loadCosts();
@@ -110,6 +114,7 @@ export default function ExpensesPage() {
       setAmount("");
       setCategory("");
       setDescription("");
+      setPaymentType("");   
       setDate(new Date().toISOString().split("T")[0]);
     } catch (error) {
       console.error("Erro ao salvar despesa:", error);
@@ -282,7 +287,7 @@ export default function ExpensesPage() {
               </div>
               {/* FREQUENCY */}
               <div className="space-y-2">
-                <Label htmlFor="frequency">Frequency</Label>
+                <Label htmlFor="frequency">Frequencia</Label>
                 <Select value={frequency} onValueChange={handleFrequencyChange}>
                   <SelectTrigger className="select-trigger">
                     <SelectValue placeholder="Selecionar Frequência" />
@@ -309,6 +314,23 @@ export default function ExpensesPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="paymentType">Tipo de Pagamento</Label>
+                <Select value={paymentType} onValueChange={setPaymentType}>
+                  <SelectTrigger className="select-trigger">
+                    <SelectValue placeholder="Selecionar Frequência" />
+                  </SelectTrigger>
+                  <SelectContent className="select-content">
+                    <SelectItem className="select-item" value="Cartão de Crédito">
+                      Cartão de Crédito
+                    </SelectItem>
+                    <SelectItem className="select-item" value="Boleto">
+                      Boleto
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>  
 
               {/* 🔥 DURATION (ENTRA AQUI, LOGO ABAIXO) */}
               {showDurationInput && (

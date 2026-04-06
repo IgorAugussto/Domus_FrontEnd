@@ -1,5 +1,7 @@
 import api from '../lib/api';
 
+export type PaymentType = "Cartão de Crédito" | "Boleto";
+
 export interface Cost {
   id: string;
   description: string;
@@ -8,6 +10,8 @@ export interface Cost {
   category: string;
   frequency: string;
   durationInMonths: number;
+  paymentType: PaymentType;
+  paid: boolean;
 }
 
 export const costService = {
@@ -18,13 +22,15 @@ export const costService = {
       startDate: data.startDate,
       category: data.category,
       frequency: data.frequency,
-      durationInMonths: data.durationInMonths
+      durationInMonths: data.durationInMonths,
+      paymentType: data.paymentType,
+      paid: data.paid ?? false,
     });
   },
 
   getAll: async () => {
     const response = await api.get("/costs");
-    return response.data; // 👈 AQUI ESTAVA O ERRO DO DASHBOARD
+    return response.data;
   },
 
   getTotal: async () => {
@@ -34,12 +40,14 @@ export const costService = {
 
   update: async (id: number, data: any) => {
     return api.put(`/costs/${id}`, {
-      value: data.amount,
+      value: data.value ?? data.amount, // ✅ corrigido — funciona para o Payments e o ExpensesPage
       description: data.description,
       startDate: data.startDate,
       category: data.category,
       frequency: data.frequency,
-      durationInMonths: data.durationInMonths
+      durationInMonths: data.durationInMonths,
+      paymentType: data.paymentType,
+      paid: data.paid,
     });
   },
 
