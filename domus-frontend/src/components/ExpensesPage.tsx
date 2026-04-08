@@ -1,5 +1,5 @@
 // src/components/ExpensesPage.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -17,8 +17,9 @@ import {
   SelectValue,
 } from "../ui-components/select";
 import { Textarea } from "../ui-components/textArea";
-import { DollarSign, Plus } from "lucide-react";
+import { DollarSign, Plus, Upload } from "lucide-react";
 import { costService } from "../service/costService";
+import { statementService } from "../service/statementService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { FeedbackToast } from "./FeedbackToast";
@@ -28,7 +29,7 @@ import { expenseDescriptionLabel } from "../utils/labels/expenseDescriptionLabel
 
 const formatDateToISO = (date: string) => {
   if (!date) return "";
-  return date; // input[type=date] já retorna yyyy-MM-dd
+  return date;
 };
 
 export default function ExpensesPage() {
@@ -54,17 +55,18 @@ export default function ExpensesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
+  // ── Estados do import de extrato ──
+  const [importing, setImporting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     loadCosts();
   }, []);
 
   useEffect(() => {
     if (!toast) return;
-
-    const timer = setTimeout(() => {
-      setToast(null);
-    }, 3000);
-
+    const timer = setTimeout(() => setToast(null), 3000);
     return () => clearTimeout(timer);
   }, [toast]);
 
@@ -98,36 +100,27 @@ export default function ExpensesPage() {
         category,
         frequency,
         durationInMonths: frequency === "One-time" ? 1 : duration,
-        paymentType,        // ✅ adicionado
-        paid: false,        // ✅ toda despesa nova começa como não paga
-
+        paymentType,
+        paid: false,
       });
 
       await loadCosts();
 
-      setToast({
-        message: "Despesa salva com sucesso",
-        type: "success",
-      });
+      setToast({ message: "Despesa salva com sucesso", type: "success" });
 
-      // Limpa o formulário
       setAmount("");
       setCategory("");
       setDescription("");
-      setPaymentType("");   
+      setPaymentType("");
       setDate(new Date().toISOString().split("T")[0]);
     } catch (error) {
       console.error("Erro ao salvar despesa:", error);
-      setToast({
-        message: "Preencha todos os campos",
-        type: "error",
-      });
+      setToast({ message: "Preencha todos os campos", type: "error" });
     }
   };
 
   const handleFrequencyChange = (value: string) => {
     setFrequency(value);
-
     if (value === "One-time") {
       setDuration(1);
       setShowDurationInput(false);
@@ -139,7 +132,6 @@ export default function ExpensesPage() {
 
   const handleDeleteCost = async () => {
     if (!selectedCost) return;
-
     try {
       await costService.delete(selectedCost.id);
       await loadCosts();
@@ -152,7 +144,6 @@ export default function ExpensesPage() {
 
   const handleEditCost = async (data: any) => {
     if (!editingCost) return;
-
     try {
       await costService.update(editingCost.id, data);
       await loadCosts();
@@ -161,6 +152,51 @@ export default function ExpensesPage() {
     } catch (error) {
       console.error("Erro ao editar cost:", error);
       alert("Erro ao editar cost.");
+    }
+  };
+
+  // ── Handler de import de extrato ──
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const name = file.name.toLowerCase();
+    if (!name.endsWith(".csv") && !name.endsWith(".ofx")) {
+      setToast({ message: "Formato inválido. Envie um arquivo CSV ou OFX.", type: "error" });
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
+  const handleImport = async () => {
+    if (!selectedFile) return;
+
+    setImporting(true);
+    try {
+      const result = await statementService.import(selectedFile);
+
+      await loadCosts();
+
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+
+      if (result.errors.length > 0) {
+        setToast({
+          message: `${result.saved} de ${result.total} despesas importadas. ${result.errors.length} erro(s).`,
+          type: "error",
+        });
+      } else {
+        setToast({
+          message: `${result.saved} despesas importadas com sucesso!`,
+          type: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao importar extrato:", error);
+      setToast({ message: "Erro ao importar extrato. Tente novamente.", type: "error" });
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -196,6 +232,87 @@ export default function ExpensesPage() {
           Adicionar Despesa
         </h1>
       </div>
+
+      {/* IMPORTAR EXTRATO */}
+      <Card
+        style={{
+          background: "var(--card)",
+          borderColor: "var(--financial-trust)",
+          color: "var(--card-foreground)",
+        }}
+      >
+        <CardHeader style={{ background: "var(--financial-trust-light)" }}>
+          <CardTitle
+            className="flex items-center gap-2"
+            style={{ color: "var(--financial-trust)" }}
+          >
+            <Upload className="h-5 w-5" />
+            Importar Extrato
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <p className="text-sm mb-4" style={{ color: "var(--muted-foreground)" }}>
+            Importe seu extrato do Nubank em formato <strong>CSV</strong> ou <strong>OFX</strong>.
+            As despesas serão adicionadas automaticamente como "Cartão de Crédito".
+          </p>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Input de arquivo oculto */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.ofx"
+              onChange={handleFileChange}
+              className="hidden"
+              id="statement-file-input"
+            />
+
+            {/* Botão para abrir o seletor de arquivo */}
+            <label
+              htmlFor="statement-file-input"
+              className="cursor-pointer px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150"
+              style={{
+                borderColor: "var(--financial-trust)",
+                color: "var(--financial-trust)",
+                background: "rgba(59,130,246,0.08)",
+              }}
+            >
+              {selectedFile ? `📄 ${selectedFile.name}` : "Selecionar arquivo"}
+            </label>
+
+            {/* Botão de importar — só aparece quando um arquivo foi selecionado */}
+            {selectedFile && (
+              <Button
+                type="button"
+                onClick={handleImport}
+                disabled={importing}
+                style={{
+                  background: "var(--financial-trust)",
+                  color: "white",
+                  opacity: importing ? 0.7 : 1,
+                }}
+              >
+                {importing ? "Importando..." : "Subir Arquivo"}
+              </Button>
+            )}
+
+            {/* Botão de limpar seleção */}
+            {selectedFile && !importing && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedFile(null);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
+                className="text-xs cursor-pointer hover:opacity-70"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                ✕ Cancelar
+              </button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* FORMULÁRIO */}
       <Card
@@ -267,10 +384,7 @@ export default function ExpensesPage() {
                     <SelectItem className="select-item" value="Entertainment">
                       Lazer
                     </SelectItem>
-                    <SelectItem
-                      className="select-item"
-                      value="Bills & Utilities"
-                    >
+                    <SelectItem className="select-item" value="Bills & Utilities">
                       Contas e Serviços
                     </SelectItem>
                     <SelectItem className="select-item" value="Healthcare">
@@ -285,6 +399,7 @@ export default function ExpensesPage() {
                   </SelectContent>
                 </Select>
               </div>
+
               {/* FREQUENCY */}
               <div className="space-y-2">
                 <Label htmlFor="frequency">Frequencia</Label>
@@ -296,30 +411,19 @@ export default function ExpensesPage() {
                     <SelectItem className="select-item" value="One-time">
                       Único
                     </SelectItem>
-                    {/*<SelectItem className="select-item" value="Weekly">
-                      Weekly
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Bi-weekly">
-                      Bi-weekly
-                    </SelectItem>*/}
                     <SelectItem className="select-item" value="Monthly">
                       Mensal
                     </SelectItem>
-                    {/*<SelectItem className="select-item" value="Quarterly">
-                      Quarterly
-                    </SelectItem>
-                    <SelectItem className="select-item" value="Annually">
-                      Annually
-                    </SelectItem>*/}
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* TIPO DE PAGAMENTO */}
               <div className="space-y-2">
                 <Label htmlFor="paymentType">Tipo de Pagamento</Label>
                 <Select value={paymentType} onValueChange={setPaymentType}>
                   <SelectTrigger className="select-trigger">
-                    <SelectValue placeholder="Selecionar Frequência" />
+                    <SelectValue placeholder="Selecionar Tipo de Pagamento" />
                   </SelectTrigger>
                   <SelectContent className="select-content">
                     <SelectItem className="select-item" value="Cartão de Crédito">
@@ -330,9 +434,9 @@ export default function ExpensesPage() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
-              </div>  
+              </div>
 
-              {/* 🔥 DURATION (ENTRA AQUI, LOGO ABAIXO) */}
+              {/* DURATION */}
               {showDurationInput && (
                 <div className="space-y-2">
                   <Label htmlFor="duration">
@@ -342,7 +446,6 @@ export default function ExpensesPage() {
                     {frequency === "Quarterly" && "Number of quarters"}
                     {frequency === "Annually" && "Number of years"}
                   </Label>
-
                   <Input
                     id="duration"
                     type="number"
@@ -502,6 +605,7 @@ export default function ExpensesPage() {
           }}
         />
       )}
+
       {/* MODAL DELETE */}
       {deletingCost && (
         <DeleteConfirmModal
