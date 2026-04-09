@@ -49,17 +49,17 @@ export function DashboardPage() {
   const [monthlyData, setMonthlyData] = useState<MonthlyProjection[]>([]);
   const [yearlyData, setYearlyData] = useState<YearlyProjection[]>([]);
   const [activeTab, setActiveTab] = useState<"ANUAL" | "MENSAL">("ANUAL");
-  
+
   // ✅ CORRIGIDO: Sempre inicia com o mês atual
   const [selectedMonth, setSelectedMonth] = useState<string>(() => {
     return dayjs().format("YYYY-MM");
   });
-  
+
   // ✅ NOVO: Controle de ano
   const [selectedYear] = useState<number>(() => {
     return dayjs().year();
   });
-  
+
   const [kpiIncome, setKpiIncome] = useState(0);
   const [kpiExpenses, setKpiExpenses] = useState(0);
   const [kpiInvestments, setKpiInvestments] = useState(0);
@@ -69,7 +69,9 @@ export function DashboardPage() {
   // Estados para a meta de gastos
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [spendingGoal, setSpendingGoal] = useState<number>(0);
-  const [showGoalLine, setShowGoalLine] = useState(false);
+  const [showGoalLine, setShowGoalLine] = useState<boolean>(() => {
+    return localStorage.getItem("spendingGoal") !== null;
+  });
 
   const totalInvestments = useMemo(() => {
     return investments.reduce((acc, inv) => acc + Number(inv.value), 0);
@@ -130,7 +132,6 @@ export function DashboardPage() {
         const savedGoal = localStorage.getItem("spendingGoal");
         if (savedGoal) {
           setSpendingGoal(Number(savedGoal));
-          setShowGoalLine(true);
         }
       } catch (err) {
         console.error("Erro ao carregar dados do dashboard:", err);
@@ -184,6 +185,8 @@ export function DashboardPage() {
   const handleToggleGoal = () => {
     if (showGoalLine) {
       setShowGoalLine(false);
+      localStorage.removeItem("spendingGoal"); 
+      setSpendingGoal(0); 
     } else {
       setShowGoalModal(true);
     }
