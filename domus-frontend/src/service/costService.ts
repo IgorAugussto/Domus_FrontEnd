@@ -39,8 +39,10 @@ export const costService = {
   },
 
   update: async (id: number, data: any) => {
-    return api.put(`/costs/${id}`, {
-      value: data.value ?? data.amount, // ✅ corrigido — funciona para o Payments e o ExpensesPage
+    console.log("ID:", id, typeof id);
+    console.log("DATA COMPLETO:", JSON.stringify(data));
+    const payload = {
+      value: data.amount ?? data.value,  // ✅ prioriza amount (novo valor do modal)
       description: data.description,
       startDate: data.startDate,
       category: data.category,
@@ -48,7 +50,9 @@ export const costService = {
       durationInMonths: data.durationInMonths,
       paymentType: data.paymentType,
       paid: data.paid,
-    });
+    };
+    console.log("PAYLOAD ENVIADO:", JSON.stringify(payload));
+    return api.put(`/costs/${id}`, payload);
   },
 
   delete: async (id: number) => {

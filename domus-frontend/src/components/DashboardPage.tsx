@@ -132,7 +132,6 @@ export function DashboardPage() {
         const savedGoal = localStorage.getItem("spendingGoal");
         if (savedGoal) {
           setSpendingGoal(Number(savedGoal));
-          setShowGoalLine(true);
         }
       } catch (err) {
         console.error("Erro ao carregar dados do dashboard:", err);
@@ -186,6 +185,8 @@ export function DashboardPage() {
   const handleToggleGoal = () => {
     if (showGoalLine) {
       setShowGoalLine(false);
+      localStorage.removeItem("spendingGoal"); 
+      setSpendingGoal(0); 
     } else {
       setShowGoalModal(true);
     }
