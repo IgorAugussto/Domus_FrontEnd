@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "../ui-components/card";
 import { FeedbackToast } from "../components/FeedbackToast";
-import { paymentStatusService, type PaymentMonthItem } from "../service/Paymentstatusservice";
+import { paymentStatusService, type PaymentMonthItem } from "../service/paymentStatusService";
 
 export type PaymentType = "Cartão de Crédito" | "Boleto";
 
