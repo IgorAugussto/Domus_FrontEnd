@@ -62,7 +62,7 @@ export default function LoginPage() {
             <strong className="block text-blue-300">Conta demo</strong>
             <span>Email:</span> demo@domus.app
             <br />
-            <span>Senha:</span> lk\jsfg25
+            <span>Senha:</span> lkjsfg25
             <br />
             <span className="block mt-2 text-xs text-blue-300/80">
               Dados reiniciados periodicamente
