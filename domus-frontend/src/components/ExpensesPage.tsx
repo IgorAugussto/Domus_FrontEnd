@@ -58,6 +58,7 @@ export default function ExpensesPage() {
   // ── Estados do import de extrato ──
   const [importing, setImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [dueDate, setDueDate] = useState(""); // ✅ data de vencimento
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -155,7 +156,7 @@ export default function ExpensesPage() {
     }
   };
 
-  // ── Handler de import de extrato ──
+  // ── Handler de seleção de arquivo ──
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -167,18 +168,26 @@ export default function ExpensesPage() {
     }
 
     setSelectedFile(file);
+    setDueDate(""); // ✅ limpa a data ao selecionar novo arquivo
   };
 
+  // ── Handler de import ──
   const handleImport = async () => {
     if (!selectedFile) return;
 
+    if (!dueDate) {
+      setToast({ message: "Informe a data de vencimento antes de importar.", type: "error" });
+      return;
+    }
+
     setImporting(true);
     try {
-      const result = await statementService.import(selectedFile);
+      const result = await statementService.import(selectedFile, dueDate);
 
       await loadCosts();
 
       setSelectedFile(null);
+      setDueDate("");
       if (fileInputRef.current) fileInputRef.current.value = "";
 
       if (result.errors.length > 0) {
@@ -256,60 +265,92 @@ export default function ExpensesPage() {
             As despesas serão adicionadas automaticamente como "Cartão de Crédito".
           </p>
 
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Input de arquivo oculto */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,.ofx"
-              onChange={handleFileChange}
-              className="hidden"
-              id="statement-file-input"
-            />
+          <div className="flex flex-col gap-4">
 
-            {/* Botão para abrir o seletor de arquivo */}
-            <label
-              htmlFor="statement-file-input"
-              className="cursor-pointer px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150"
-              style={{
-                borderColor: "var(--financial-trust)",
-                color: "var(--financial-trust)",
-                background: "rgba(59,130,246,0.08)",
-              }}
-            >
-              {selectedFile ? `📄 ${selectedFile.name}` : "Selecionar arquivo"}
-            </label>
+            {/* Linha 1: seletor de arquivo */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.ofx"
+                onChange={handleFileChange}
+                className="hidden"
+                id="statement-file-input"
+              />
 
-            {/* Botão de importar — só aparece quando um arquivo foi selecionado */}
-            {selectedFile && (
-              <Button
-                type="button"
-                onClick={handleImport}
-                disabled={importing}
+              <label
+                htmlFor="statement-file-input"
+                className="cursor-pointer px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150"
                 style={{
-                  background: "var(--financial-trust)",
-                  color: "white",
-                  opacity: importing ? 0.7 : 1,
+                  borderColor: "var(--financial-trust)",
+                  color: "var(--financial-trust)",
+                  background: "rgba(59,130,246,0.08)",
                 }}
               >
-                {importing ? "Importando..." : "Subir Arquivo"}
-              </Button>
+                {selectedFile ? `📄 ${selectedFile.name}` : "Selecionar arquivo"}
+              </label>
+
+              {selectedFile && !importing && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedFile(null);
+                    setDueDate("");
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                  }}
+                  className="text-xs cursor-pointer hover:opacity-70"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
+                  ✕ Cancelar
+                </button>
+              )}
+            </div>
+
+            {/* ✅ Linha 2: campo de data de vencimento — aparece só após selecionar arquivo */}
+            {selectedFile && (
+              <div className="flex flex-col gap-2 p-3 rounded-lg border"
+                style={{ borderColor: "var(--financial-trust)", background: "rgba(59,130,246,0.05)" }}
+              >
+                <Label
+                  htmlFor="due-date"
+                  className="text-sm font-medium"
+                  style={{ color: "var(--financial-trust)" }}
+                >
+                  📅 Qual é a data de vencimento desta fatura?
+                </Label>
+                <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  Todas as despesas importadas serão alocadas nesta data.
+                </p>
+                <Input
+                  id="due-date"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  style={{
+                    borderColor: "var(--financial-trust)",
+                    maxWidth: "200px",
+                  }}
+                />
+
+                {/* Botão de importar — só aparece quando arquivo e data estão preenchidos */}
+                {dueDate && (
+                  <Button
+                    type="button"
+                    onClick={handleImport}
+                    disabled={importing}
+                    className="mt-1 w-fit"
+                    style={{
+                      background: "var(--financial-trust)",
+                      color: "white",
+                      opacity: importing ? 0.7 : 1,
+                    }}
+                  >
+                    {importing ? "Importando..." : "Subir Arquivo"}
+                  </Button>
+                )}
+              </div>
             )}
 
-            {/* Botão de limpar seleção */}
-            {selectedFile && !importing && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedFile(null);
-                  if (fileInputRef.current) fileInputRef.current.value = "";
-                }}
-                className="text-xs cursor-pointer hover:opacity-70"
-                style={{ color: "var(--muted-foreground)" }}
-              >
-                ✕ Cancelar
-              </button>
-            )}
           </div>
         </CardContent>
       </Card>
