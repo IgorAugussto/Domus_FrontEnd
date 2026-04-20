@@ -24,7 +24,7 @@ jobs:
         cd domus-frontend
         npm run build
       env:
-        VITE_API_URL: https://d3r6rgf1tqyenv.cloudfront.net/api
+        VITE_API_URL: https://domusapp.dev.br:8443/api
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3
