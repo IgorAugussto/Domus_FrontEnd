@@ -535,7 +535,7 @@ export default function ExpensesPage() {
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Filtrar" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="select-trigger">
               <SelectItem value="ALL">Todas</SelectItem>
               <SelectItem value="One-time">Único</SelectItem>
               <SelectItem value="Monthly">Mensal</SelectItem>
