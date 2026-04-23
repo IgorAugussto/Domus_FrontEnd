@@ -162,8 +162,8 @@ export default function ExpensesPage() {
     if (!file) return;
 
     const name = file.name.toLowerCase();
-    if (!name.endsWith(".csv") && !name.endsWith(".ofx")) {
-      setToast({ message: "Formato inválido. Envie um arquivo CSV ou OFX.", type: "error" });
+    if (!name.endsWith(".csv") && !name.endsWith(".ofx") && !name.endsWith(".pdf")) {
+      setToast({ message: "Formato inválido. Envie um arquivo CSV, OFX ou PDF.", type: "error" });
       return;
     }
 
@@ -194,6 +194,16 @@ export default function ExpensesPage() {
         setToast({
           message: `${result.saved} de ${result.total} despesas importadas. ${result.errors.length} erro(s).`,
           type: "error",
+        });
+      } else if (result.skipped > 0 && result.saved === 0) {
+        setToast({
+          message: `Nenhuma nova despesa. ${result.skipped} já estavam cadastradas.`,
+          type: "success",
+        });
+      } else if (result.skipped > 0) {
+        setToast({
+          message: `${result.saved} novas despesas importadas. ${result.skipped} já existiam e foram ignoradas.`,
+          type: "success",
         });
       } else {
         setToast({
@@ -261,7 +271,7 @@ export default function ExpensesPage() {
         </CardHeader>
         <CardContent className="pt-4">
           <p className="text-sm mb-4" style={{ color: "var(--muted-foreground)" }}>
-            Importe seu extrato do Nubank em formato <strong>CSV</strong> ou <strong>OFX</strong>.
+            Importe seu extrato do <strong>Nubank</strong> (CSV ou OFX) ou do <strong>Itaú</strong> (PDF).
             As despesas serão adicionadas automaticamente como "Cartão de Crédito".
           </p>
 
@@ -272,7 +282,7 @@ export default function ExpensesPage() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".csv,.ofx"
+                accept=".csv,.ofx,.pdf"
                 onChange={handleFileChange}
                 className="hidden"
                 id="statement-file-input"

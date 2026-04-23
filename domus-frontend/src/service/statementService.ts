@@ -4,7 +4,7 @@ export const statementService = {
   import: async (
     file: File,
     dueDate: string
-  ): Promise<{ total: number; saved: number; errors: string[] }> => {
+  ): Promise<{ total: number; saved: number; skipped: number; errors: string[] }> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('dueDate', dueDate);
