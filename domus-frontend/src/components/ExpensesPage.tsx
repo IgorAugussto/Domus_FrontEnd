@@ -582,6 +582,13 @@ export default function ExpensesPage() {
                         {" - "}
                         {frequencyLabels[inc.frequency] ?? inc.frequency}
                       </span>
+                      {inc.startDate && (
+                        <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
+                          {new Date(inc.startDate + "T00:00:00")
+                            .toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
+                            .replace(/^./, (c) => c.toUpperCase())}
+                        </p>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-3">
