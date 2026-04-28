@@ -26,8 +26,8 @@ export const investmentService = {
   },
 
   getAll: async () => {
-    const response = await api.get("/investments");
-    return response.data; // 👈 AQUI ESTAVA O ERRO DO DASHBOARD
+    const response = await api.get("/investments?size=9999");
+    return response.data.content;
   },
 
   getTotal: async () => {
