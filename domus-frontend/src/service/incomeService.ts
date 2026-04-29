@@ -27,7 +27,7 @@ export const incomeService = {
 
   getAll: async () => {
     const response = await api.get("/income?size=9999");
-    return response.data.content;
+    return response.data.content ?? [];
   },
 
   getTotal: async () => {

@@ -30,7 +30,7 @@ export const costService = {
 
   getAll: async () => {
     const response = await api.get("/costs?size=9999");
-    return response.data.content;
+    return response.data.content ?? [];
   },
 
   getTotal: async () => {
