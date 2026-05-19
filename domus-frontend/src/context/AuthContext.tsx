@@ -1,8 +1,7 @@
 import { createContext, useState, useEffect, type ReactNode } from 'react';
-import { authService } from '../service/authService';
+import { authService, type AuthResponse } from '../service/authService';
 
 interface AuthUser {
-  token: string;
   email: string;
   name?: string;
 }
@@ -10,45 +9,40 @@ interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Verifica sessão ativa ao carregar a aplicação
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token && !user) {
-      // você pode buscar dados do usuário, mas por agora vamos só restaurar
-      setUser({ token, email: "", name: "" });
-    }
+    authService.getMe()
+      .then((data: AuthResponse | null) => {
+        if (data) setUser({ email: data.email, name: data.nome });
+      })
+      .finally(() => setIsLoading(false));
   }, []);
-
 
   const login = async (email: string, password: string) => {
     const response = await authService.login({ email, password });
-    localStorage.setItem("token", response.token)
-    const authUser: AuthUser = {
-      token: response.token,
-      email: response.email,
-      name: response.name,
-    };
-    setUser(authUser);
+    setUser({ email: response.email, name: response.nome });
   };
 
-  const logout = () => {
-    authService.logout();
+  const logout = async () => {
+    await authService.logout();
     setUser(null);
   };
 
   const isAuthenticated = Boolean(user);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

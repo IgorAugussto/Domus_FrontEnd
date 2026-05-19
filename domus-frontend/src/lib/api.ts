@@ -3,31 +3,17 @@ import axios from "axios";
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   timeout: 60000,
+  withCredentials: true, // envia o cookie jwt automaticamente em toda request
 });
 
-// 🔹 Adiciona o token JWT no header Authorization
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-);
-
-// 🧠 Função de delay
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-// 🔁 Retry automático
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const config = error.config;
 
-    // 👇 Se token expirou ou sem permissão, redireciona para login
     if (error.response?.status === 401 || error.response?.status === 403) {
-      localStorage.removeItem('token');
       window.location.href = '/login';
       return Promise.reject(error);
     }

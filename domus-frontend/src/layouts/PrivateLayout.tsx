@@ -1,5 +1,6 @@
 import Navigation from "../components/Navigation";
 import { Outlet, useNavigate } from "react-router-dom";
+import { authService } from "../service/authService";
 
 export default function PrivateLayout() {
   const navigate = useNavigate();
@@ -8,8 +9,8 @@ export default function PrivateLayout() {
     navigate(`/${page}`);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const handleLogout = async () => {
+    await authService.logout();
     navigate("/login");
   };
 
