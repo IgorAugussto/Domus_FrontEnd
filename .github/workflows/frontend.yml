@@ -46,42 +46,40 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: domus-frontend/package-lock.json
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
 
-      - name: Install dependencies
-        run: |
-          cd domus-frontend
-          npm ci
+    - name: Install dependencies
+      run: |
+        cd domus-frontend
+        npm install
 
-      - name: Build frontend
-        run: |
-          cd domus-frontend
-          npm run build
-        env:
-          VITE_API_URL: https://d3r6rgf1tqyenv.cloudfront.net/api
+    - name: Build frontend
+      run: |
+        cd domus-frontend
+        npm run build
+      env:
+        VITE_API_URL: https://domusapp.dev.br:8443/api
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-2
 
-      - name: Deploy para S3
-        run: |
-          cd domus-frontend
-          aws s3 sync dist/ s3://domus-frt --delete
+    - name: Deploy para S3
+      run: |
+        cd domus-frontend
+        aws s3 sync dist/ s3://domus-frt --delete
 
-      - name: Invalidar cache do CloudFront
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id E2A4RFAVYIN06P \
-            --paths "/*"
+    - name: Invalidar cache do CloudFront
+      run: |
+        aws cloudfront create-invalidation \
+          --distribution-id E2A4RFAVYIN06P \
+          --paths "/*"
