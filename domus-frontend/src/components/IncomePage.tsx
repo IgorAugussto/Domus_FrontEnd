@@ -19,6 +19,7 @@ import {
 } from "../ui-components/card";
 import { Plus, Wallet } from "lucide-react";
 import { incomeService } from "../service/incomeService";
+import type { Income } from "../service/incomeService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { FeedbackToast } from "./FeedbackToast";
@@ -31,13 +32,13 @@ export default function IncomePage() {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [incomes, setIncomes] = useState<any[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [frequency, setFrequency] = useState("");
   const [autoFilled, setAutoFilled] = useState(false);
-  const [selectedIncome, setSelectedIncome] = useState<any>(null);
-  const [editingIncome, setEditingIncome] = useState<any | null>(null);
+  const [selectedIncome, setSelectedIncome] = useState<Income | null>(null);
+  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
   const [showEdit, setShowEdit] = useState(false);
-  const [deletingIncome, setDeletingIncome] = useState<any | null>(null);
+  const [deletingIncome, setDeletingIncome] = useState<Income | null>(null);
   const [showDelete, setShowDelete] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
@@ -57,7 +58,7 @@ export default function IncomePage() {
     if (category !== "Salary") {
       setAutoFilled(false);
     }
-  }, [category]);
+  }, [category, autoFilled]);
 
   useEffect(() => {
     if (!toast) return;
@@ -132,7 +133,7 @@ export default function IncomePage() {
     }
   };
 
-  const handleEditIncome = async (data: any) => {
+  const handleEditIncome = async (data: Record<string, unknown>) => {
     if (!editingIncome) return;
 
     try {
@@ -318,7 +319,7 @@ export default function IncomePage() {
             </p>
           ) : (
             <ul className="space-y-3">
-              {incomes.map((inc: any) => (
+              {incomes.map((inc) => (
                 <li
                   key={inc.id}
                   className="p-3 rounded-lg border"

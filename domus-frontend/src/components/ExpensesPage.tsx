@@ -19,6 +19,7 @@ import {
 import { Textarea } from "../ui-components/textArea";
 import { DollarSign, Plus, Upload } from "lucide-react";
 import { costService } from "../service/costService";
+import type { Cost } from "../service/costService";
 import { statementService } from "../service/statementService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
@@ -37,15 +38,15 @@ export default function ExpensesPage() {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [costs, setCosts] = useState<any[]>([]);
+  const [costs, setCosts] = useState<Cost[]>([]);
   const [frequency, setFrequency] = useState("");
   const [paymentType, setPaymentType] = useState("");
   const [duration, setDuration] = useState<number | null>(null);
   const [showDurationInput, setShowDurationInput] = useState(false);
-  const [selectedCost, setSelectedCost] = useState<any>(null);
-  const [editingCost, setEditingCost] = useState<any | null>(null);
+  const [selectedCost, setSelectedCost] = useState<Cost | null>(null);
+  const [editingCost, setEditingCost] = useState<Cost | null>(null);
   const [showEdit, setShowEdit] = useState(false);
-  const [deletingCost, setDeletingCost] = useState<any | null>(null);
+  const [deletingCost, setDeletingCost] = useState<Cost | null>(null);
   const [showDelete, setShowDelete] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
@@ -204,7 +205,7 @@ export default function ExpensesPage() {
     }
   };
 
-  const handleEditCost = async (data: any) => {
+  const handleEditCost = async (data: Record<string, unknown>) => {
     if (!editingCost) return;
     try {
       await costService.update(editingCost.id, data);
@@ -614,7 +615,7 @@ export default function ExpensesPage() {
             </p>
           ) : (
             <ul className="space-y-3">
-              {paginatedCosts.map((inc: any) => (
+              {paginatedCosts.map((inc) => (
                 <li
                   key={inc.id}
                   className="p-3 rounded-lg border"

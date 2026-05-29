@@ -3,7 +3,7 @@ import api from '../lib/api';
 export type PaymentType = "Cartão de Crédito" | "Boleto";
 
 export interface Cost {
-  id: string;
+  id: number;
   description: string;
   value: number;
   startDate: string;
