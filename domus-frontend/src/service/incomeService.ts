@@ -12,8 +12,26 @@ export interface Income {
   category: string;
 }
 
+export interface IncomeCreateInput {
+  amount: number;
+  description: string;
+  startDate: string;
+  endDate: string;
+  recurring: boolean;
+  category: string;
+  frequency: string;  
+}
+
+export interface IncomeUpdateInput {
+  amount?: number;
+  description?: string;
+  startDate?: string;
+  category?: string;
+  frequency?: string;
+}
+
 export const incomeService = {
-  create: async (data: any) => {
+  create: async (data: IncomeCreateInput) => {
     return api.post("/income", {
       value: data.amount,
       description: data.description,
@@ -35,7 +53,7 @@ export const incomeService = {
     return response.data;
   },
 
-  update: async (id: number, data: any) => {
+  update: async (id: number, data: IncomeUpdateInput) => {
     return api.put(`/income/${id}`, {
       value: data.amount,
       description: data.description,

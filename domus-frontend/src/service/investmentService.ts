@@ -12,9 +12,28 @@ export interface Investment {
   expectedReturn: number; // opcional
 }
 
+export interface InvestmentCreateInput {
+  amount: number;
+  description: string;
+  startDate: string;
+  endDate: string;
+  type: string;              // tipo do investimento
+  expectedReturn: number;    // retorno esperado
+}
+
+export interface InvestmentUpdateInput {
+  amount?: number;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  category?: string;
+  typeInvestments?: string;
+  expectedReturn?: number;
+}
+
 // Dados que você envia pro back
 export const investmentService = {
-  create: async (data: any) => {
+  create: async (data: InvestmentCreateInput) => {
     return api.post("/investments", {
       value: data.amount,
       description: data.description,
@@ -35,7 +54,7 @@ export const investmentService = {
     return response.data;
   },
 
-  update: async (id: number, data: any) => {
+  update: async (id: number, data: InvestmentUpdateInput) => {
       return api.put(`/investments/${id}`, {
         value: data.amount,
         description: data.description,
