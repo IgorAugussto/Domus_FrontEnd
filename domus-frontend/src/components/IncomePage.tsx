@@ -97,6 +97,8 @@ export default function IncomePage() {
         category,
         frequency,
         startDate: date,
+        endDate: date,
+        recurring: frequency !== "One-time",
       });
 
       await loadIncomes();
@@ -124,7 +126,7 @@ export default function IncomePage() {
     if (!selectedIncome) return;
 
     try {
-      await incomeService.delete(selectedIncome.id);
+      await incomeService.delete(Number(selectedIncome.id));
       await loadIncomes();
       setShowDelete(false);
     } catch (error) {
@@ -137,7 +139,7 @@ export default function IncomePage() {
     if (!editingIncome) return;
 
     try {
-      await incomeService.update(editingIncome.id, data);
+      await incomeService.update(Number(editingIncome.id), data);
       await loadIncomes();
       setShowEdit(false);
       setEditingIncome(null);
@@ -384,7 +386,7 @@ export default function IncomePage() {
         <EditEntityModal
           open={showEdit}
           title="Edit income"
-          initialData={editingIncome}
+          initialData={editingIncome as unknown as Record<string, unknown>}
           onSave={handleEditIncome}
           onCancel={() => setShowEdit(false)}
         />
