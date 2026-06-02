@@ -19,6 +19,7 @@ import {
 } from "../ui-components/card";
 import { Plus, TrendingUp } from "lucide-react";
 import { investmentService } from "../service/investmentService";
+import type { Investment } from "../service/investmentService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { FeedbackToast } from "./FeedbackToast";
@@ -36,13 +37,11 @@ export default function InvestmentsPage() {
   const [endDate, setEndDate] = useState(
     new Date().toISOString().split("T")[0],
   );
-  const [investments, setInvestments] = useState<any[]>([]);
-  const [selectedInvestment, setSelectedInvestment] = useState<any>(null);
-  const [editingInvestment, setEditingInvestment] = useState<any | null>(null);
+  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null);
+  const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null);
   const [showEdit, setShowEdit] = useState(false);
-  const [deletingInvestment, setDeletingInvestment] = useState<any | null>(
-    null,
-  );
+  const [deletingInvestment, setDeletingInvestment] = useState<Investment | null>(null);
   const [showDelete, setShowDelete] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
@@ -123,7 +122,7 @@ export default function InvestmentsPage() {
     }
   };
 
-  const handleEditInvestment = async (data: any) => {
+  const handleEditInvestment = async (data: Record<string, unknown>) => {
     if (!editingInvestment) return;
 
     try {
@@ -317,7 +316,7 @@ export default function InvestmentsPage() {
             </p>
           ) : (
             <ul className="space-y-3">
-              {investments.map((inc: any) => (
+              {investments.map((inc) => (
                 <li
                   key={inc.id}
                   className="p-3 rounded-lg border"

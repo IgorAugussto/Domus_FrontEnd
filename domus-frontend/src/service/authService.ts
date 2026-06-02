@@ -11,32 +11,34 @@ interface RegisterRequest {
   password: string;
 }
 
-interface AuthResponse {
-  token: string;
-  type: string;
+export interface AuthResponse {
+  tipo: string;
   email: string;
-  name: string;
+  nome: string;
 }
 
 export const authService = {
-  
+
   login: async (data: LoginRequest): Promise<AuthResponse> => {
     const response = await api.post('/auth/login', data);
-    const token = response.data.token;
-    localStorage.setItem('token', token);
-    return response.data;
+    return response.data; // token está no cookie HttpOnly — JS não tem acesso
   },
 
-  register: async (data: RegisterRequest) => {
+  register: async (data: RegisterRequest): Promise<AuthResponse> => {
     const response = await api.post('/auth/register', data);
     return response.data;
   },
 
-  logout: () => {
-    localStorage.removeItem('token');
+  logout: async (): Promise<void> => {
+    await api.post('/auth/logout'); // backend zera o cookie
   },
 
-  isAuthenticated: () => {
-    return !!localStorage.getItem('token');
-  }
+  getMe: async (): Promise<AuthResponse | null> => {
+    try {
+      const response = await api.get('/auth/me');
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
 };

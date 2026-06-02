@@ -17,11 +17,35 @@ import {
   CardContent,
 } from "../ui-components/card";
 
+type EditFormData = {
+  amount: string;
+  startDate: string;
+  endDate: string;
+  category: string;
+  frequency: string;
+  description: string;
+  durationInMonths: string;
+  expectedReturn: string;
+  typeInvestments: string;
+};
+
+const emptyForm: EditFormData = {
+  amount: "",
+  startDate: "",
+  endDate: "",
+  category: "",
+  frequency: "",
+  description: "",
+  durationInMonths: "",
+  expectedReturn: "",
+  typeInvestments: "",
+};
+
 interface EditEntityModalProps {
   open: boolean;
   title: string;
-  initialData: any;
-  onSave: (data: any) => void;
+  initialData: Record<string, unknown>;
+  onSave: (data: Record<string, unknown>) => void;
   onCancel: () => void;
   showDurationInMonths?: boolean;
   showExpenseCategories?: boolean;
@@ -38,21 +62,28 @@ export function EditEntityModal({
   showExpenseCategories = false,
   showFieldsInvestments = false,
 }: EditEntityModalProps) {
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<EditFormData>(emptyForm);
 
   useEffect(() => {
     if (!initialData) return;
 
     setFormData({
-      ...initialData,
-      amount: initialData.value ?? initialData.amount,
+      amount: String(initialData.value ?? initialData.amount ?? ""),
+      startDate: String(initialData.startDate ?? ""),
+      endDate: String(initialData.endDate ?? ""),
+      category: String(initialData.category ?? ""),
+      frequency: String(initialData.frequency ?? ""),
+      description: String(initialData.description ?? ""),
+      durationInMonths: String(initialData.durationInMonths ?? ""),
+      expectedReturn: String(initialData.expectedReturn ?? ""),
+      typeInvestments: String(initialData.typeInvestments ?? ""),
     });
   }, [initialData]);
 
   if (!open) return null;
 
-  const handleChange = (field: string, value: any) => {
-    setFormData((prev: any) => ({
+  const handleChange = (field: keyof EditFormData, value: string) => {
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));

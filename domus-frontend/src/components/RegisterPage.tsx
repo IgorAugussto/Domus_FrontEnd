@@ -56,8 +56,9 @@ export default function RegisterPage() {
       });
 
       navigate("/login");
-    } catch (error: any) {
-      if (error?.response?.status === 403) {
+    } catch (error: unknown) {
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 403) {
         setToast({
           message:
             "Criação de contas desativada. Este ambiente está em modo demonstração.",

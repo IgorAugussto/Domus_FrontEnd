@@ -33,7 +33,7 @@ import { costService } from "../service/costService";
 import { incomeService } from "../service/incomeService";
 import { investmentService } from "../service/investmentService";
 import { dashboardService } from "../service/dashboardService";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import type { MonthlyProjection } from "../service/dashboardService";
 import type { YearlyProjection } from "../service/dashboardService";
 import { investmentTypeLabels } from "../utils/labels/investmentTypeLabels";
@@ -77,7 +77,7 @@ export function DashboardPage() {
     return investments.reduce((acc, inv) => acc + Number(inv.value), 0);
   }, [investments]);
 
-  const loadMonthlySummary = async (month: string) => {
+  const loadMonthlySummary = useCallback(async (month: string) => {
     try {
       const data = await dashboardService.getMonthlySummary(month);
 
@@ -89,7 +89,7 @@ export function DashboardPage() {
     } catch (err) {
       console.error("Erro ao carregar resumo mensal", err);
     }
-  };
+  }, []);
 
   // ✅ CORRIGIDO: useEffect principal com selectedYear como dependência
   useEffect(() => {
@@ -101,22 +101,14 @@ export function DashboardPage() {
           costData,
           incomeData,
           investmentData,
-          _totalIncomeValue,
-          _totalCostValue,
-          _totalInvestmentValue,
-          _dashboardSummary,
           monthlyProjectionData,
           yearlyProjectionData,
         ] = await Promise.all([
           costService.getAll(),
           incomeService.getAll(),
           investmentService.getAll(),
-          incomeService.getTotal(),
-          costService.getTotal(),
-          investmentService.getTotal(),
-          dashboardService.getSummary(),
           dashboardService.getMonthlyProjection(),
-          dashboardService.getYearlyProjection(selectedYear), // ✅ PASSA O ANO
+          dashboardService.getYearlyProjection(selectedYear),
         ]);
 
         setCosts(costData);
@@ -141,7 +133,7 @@ export function DashboardPage() {
     };
 
     loadDashboardData();
-  }, [selectedYear, selectedMonth]); // ✅ CORRIGIDO: Adicionou dependências
+  }, [selectedYear, selectedMonth, loadMonthlySummary]);
 
   // ✅ NOVO: Garante que o mês atual seja selecionado após reload
   useEffect(() => {
@@ -269,7 +261,13 @@ export function DashboardPage() {
 
   const chartData = activeTab === "ANUAL" ? yearlyData : monthlyData;
 
-  const ClickableMonthTick = ({ x, y, payload }: any) => {
+  interface ClickableMonthTickProps {
+    x: number;
+    y: number;
+    payload: { value: string };
+  }
+
+  const ClickableMonthTick = ({ x, y, payload }: ClickableMonthTickProps) => {
     const isActive = payload.value === selectedMonth;
 
     const width = 64;
@@ -538,17 +536,17 @@ export function DashboardPage() {
               <AreaChart
                 data={chartData}
                 tabIndex={-1}
-                onMouseDown={(state: any) => {
-                  state?.event?.preventDefault();
+                onMouseDown={(_data, event) => {
+                  event.preventDefault();
                 }}
-                onClick={(state: any) => {
+                onClick={(data) => {
                   if (activeTab !== "ANUAL") return;
 
-                  const payload = state?.activePayload?.[0]?.payload;
-                  if (!payload?.month) return;
+                  const month = data?.activeLabel;
+                  if (!month) return;
 
-                  setSelectedMonth(payload.month);
-                  loadMonthlySummary(payload.month);
+                  setSelectedMonth(month);
+                  loadMonthlySummary(month);
                 }}
               >
                 <CartesianGrid stroke="var(--border)" />
@@ -556,7 +554,7 @@ export function DashboardPage() {
                 <XAxis
                   dataKey="month"
                   stroke="var(--muted-foreground)"
-                  tick={<ClickableMonthTick />}
+                  tick={(props: ClickableMonthTickProps) => <ClickableMonthTick {...props} />}
                 />
 
                 <YAxis stroke="var(--muted-foreground)" />
@@ -651,8 +649,8 @@ export function DashboardPage() {
               <ResponsiveContainer width="100%" height={500}>
                 <PieChart
                   tabIndex={-1}
-                  onMouseDown={(state: any) => {
-                    state?.event?.preventDefault();
+                  onMouseDown={(_data, event) => {
+                    event.preventDefault();
                   }}
                 >
                   <Pie
@@ -707,8 +705,8 @@ export function DashboardPage() {
             <ResponsiveContainer width="100%" height={500}>
               <PieChart
                 tabIndex={-1}
-                onMouseDown={(state: any) => {
-                  state?.event?.preventDefault();
+                onMouseDown={(_data, event) => {
+                  event.preventDefault();
                 }}
               >
                 <Pie

@@ -19,6 +19,7 @@ import {
 import { Textarea } from "../ui-components/textArea";
 import { DollarSign, Plus, Upload } from "lucide-react";
 import { costService } from "../service/costService";
+import type { Cost, PaymentType } from "../service/costService";
 import { statementService } from "../service/statementService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
@@ -37,15 +38,15 @@ export default function ExpensesPage() {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [costs, setCosts] = useState<any[]>([]);
+  const [costs, setCosts] = useState<Cost[]>([]);
   const [frequency, setFrequency] = useState("");
-  const [paymentType, setPaymentType] = useState("");
+  const [paymentType, setPaymentType] = useState<PaymentType | "">("");
   const [duration, setDuration] = useState<number | null>(null);
   const [showDurationInput, setShowDurationInput] = useState(false);
-  const [selectedCost, setSelectedCost] = useState<any>(null);
-  const [editingCost, setEditingCost] = useState<any | null>(null);
+  const [selectedCost, setSelectedCost] = useState<Cost | null>(null);
+  const [editingCost, setEditingCost] = useState<Cost | null>(null);
   const [showEdit, setShowEdit] = useState(false);
-  const [deletingCost, setDeletingCost] = useState<any | null>(null);
+  const [deletingCost, setDeletingCost] = useState<Cost | null>(null);
   const [showDelete, setShowDelete] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
@@ -58,18 +59,79 @@ export default function ExpensesPage() {
   // ── Estados do import de extrato ──
   const [importing, setImporting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [dueDate, setDueDate] = useState(""); // ✅ data de vencimento
+  const [dueDate, setDueDate] = useState(""); // data de vencimento
+  const [importJobId, setImportJobId] = useState<string | null>(null); // jobId do processamento assíncrono
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadCosts();
   }, []);
 
+  // ── Polling de status do job de importação ───────────────────────────────
+  // Inicia quando importJobId é definido, para quando job termina ou timeout.
+  // ⚠️ Removemos o auto-close do toast: o usuário precisa fechar manualmente.
   useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(() => setToast(null), 3000);
-    return () => clearTimeout(timer);
-  }, [toast]);
+    if (!importJobId) return;
+
+    let attempts = 0;
+    const MAX_ATTEMPTS = 60; // 60 × 2s = 2 minutos de timeout máximo
+
+    const pollInterval = setInterval(async () => {
+      attempts++;
+      try {
+        const statusData = await statementService.getStatus(importJobId);
+
+        if (statusData.status === "DONE" && statusData.result) {
+          clearInterval(pollInterval);
+          setImportJobId(null);
+          setImporting(false);
+          await loadCosts();
+
+          const { saved, total, skipped, errors } = statusData.result;
+          if (errors.length > 0) {
+            setToast({
+              message: `${saved} de ${total} despesas importadas. ${errors.length} erro(s).`,
+              type: "error",
+            });
+          } else if (skipped > 0 && saved === 0) {
+            setToast({
+              message: `Nenhuma nova despesa. ${skipped} já estavam cadastradas.`,
+              type: "success",
+            });
+          } else if (skipped > 0) {
+            setToast({
+              message: `${saved} novas despesas importadas. ${skipped} já existiam e foram ignoradas.`,
+              type: "success",
+            });
+          } else {
+            setToast({
+              message: `${saved} despesas importadas com sucesso!`,
+              type: "success",
+            });
+          }
+
+        } else if (statusData.status === "ERROR") {
+          clearInterval(pollInterval);
+          setImportJobId(null);
+          setImporting(false);
+          setToast({ message: "Erro ao processar extrato. Tente novamente.", type: "error" });
+
+        } else if (attempts >= MAX_ATTEMPTS) {
+          clearInterval(pollInterval);
+          setImportJobId(null);
+          setImporting(false);
+          setToast({ message: "Tempo de espera excedido. Tente novamente.", type: "error" });
+        }
+        // PENDING / PROCESSING → continua aguardando
+
+      } catch (err) {
+        console.error("Erro ao verificar status do job:", err);
+        // Mantém o polling em erros de rede — pode ser instabilidade temporária
+      }
+    }, 2000);
+
+    return () => clearInterval(pollInterval);
+  }, [importJobId]);
 
   const loadCosts = async () => {
     try {
@@ -100,8 +162,8 @@ export default function ExpensesPage() {
         startDate: formatDateToISO(date),
         category,
         frequency,
-        durationInMonths: frequency === "One-time" ? 1 : duration,
-        paymentType,
+        durationInMonths: frequency === "One-time" ? 1 : (duration as number),
+        paymentType: paymentType as PaymentType,
         paid: false,
       });
 
@@ -143,7 +205,7 @@ export default function ExpensesPage() {
     }
   };
 
-  const handleEditCost = async (data: any) => {
+  const handleEditCost = async (data: Record<string, unknown>) => {
     if (!editingCost) return;
     try {
       await costService.update(editingCost.id, data);
@@ -171,51 +233,28 @@ export default function ExpensesPage() {
     setDueDate(""); // ✅ limpa a data ao selecionar novo arquivo
   };
 
-  // ── Handler de import ──
+  // ── Handler de import (assíncrono via RabbitMQ) ─────────────────────────
   const handleImport = async () => {
-    if (!selectedFile) return;
-
-    if (!dueDate) {
-      setToast({ message: "Informe a data de vencimento antes de importar.", type: "error" });
-      return;
-    }
+    if (!selectedFile || !dueDate) return;
 
     setImporting(true);
     try {
-      const result = await statementService.import(selectedFile, dueDate);
+      // Envia o arquivo → backend responde imediatamente com { jobId }
+      const { jobId } = await statementService.import(selectedFile, dueDate);
 
-      await loadCosts();
-
+      // Limpa os inputs imediatamente (arquivo já foi enviado ao servidor)
       setSelectedFile(null);
       setDueDate("");
       if (fileInputRef.current) fileInputRef.current.value = "";
 
-      if (result.errors.length > 0) {
-        setToast({
-          message: `${result.saved} de ${result.total} despesas importadas. ${result.errors.length} erro(s).`,
-          type: "error",
-        });
-      } else if (result.skipped > 0 && result.saved === 0) {
-        setToast({
-          message: `Nenhuma nova despesa. ${result.skipped} já estavam cadastradas.`,
-          type: "success",
-        });
-      } else if (result.skipped > 0) {
-        setToast({
-          message: `${result.saved} novas despesas importadas. ${result.skipped} já existiam e foram ignoradas.`,
-          type: "success",
-        });
-      } else {
-        setToast({
-          message: `${result.saved} despesas importadas com sucesso!`,
-          type: "success",
-        });
-      }
+      // Inicia o polling — o useEffect acima cuida do resto
+      setImportJobId(jobId);
+
     } catch (error) {
-      console.error("Erro ao importar extrato:", error);
-      setToast({ message: "Erro ao importar extrato. Tente novamente.", type: "error" });
-    } finally {
-      setImporting(false);
+      console.error("Erro ao enviar extrato:", error);
+      setToast({ message: "Erro ao enviar arquivo. Tente novamente.", type: "error" });
+      setImporting(false); // só reseta aqui em caso de erro no envio
+      // Se o envio funcionou, o polling é quem chama setImporting(false)
     }
   };
 
@@ -277,44 +316,63 @@ export default function ExpensesPage() {
 
           <div className="flex flex-col gap-4">
 
-            {/* Linha 1: seletor de arquivo */}
-            <div className="flex items-center gap-3 flex-wrap">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv,.ofx,.pdf"
-                onChange={handleFileChange}
-                className="hidden"
-                id="statement-file-input"
-              />
-
-              <label
-                htmlFor="statement-file-input"
-                className="cursor-pointer px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150"
+            {/* Banner: processamento em andamento (exibido durante o polling) */}
+            {importing && importJobId && (
+              <div
+                className="flex items-center gap-3 px-4 py-3 rounded-lg border text-sm"
                 style={{
                   borderColor: "var(--financial-trust)",
-                  color: "var(--financial-trust)",
                   background: "rgba(59,130,246,0.08)",
+                  color: "var(--financial-trust)",
                 }}
               >
-                {selectedFile ? `📄 ${selectedFile.name}` : "Selecionar arquivo"}
-              </label>
+                <span className="animate-spin text-base">⏳</span>
+                <span>
+                  Processando extrato em segundo plano… você pode usar o sistema normalmente.
+                </span>
+              </div>
+            )}
 
-              {selectedFile && !importing && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setDueDate("");
-                    if (fileInputRef.current) fileInputRef.current.value = "";
+            {/* Seletor de arquivo (oculto durante o processamento) */}
+            {!importing && (
+              <div className="flex items-center gap-3 flex-wrap">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.ofx,.pdf"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="statement-file-input"
+                />
+
+                <label
+                  htmlFor="statement-file-input"
+                  className="cursor-pointer px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-150"
+                  style={{
+                    borderColor: "var(--financial-trust)",
+                    color: "var(--financial-trust)",
+                    background: "rgba(59,130,246,0.08)",
                   }}
-                  className="text-xs cursor-pointer hover:opacity-70"
-                  style={{ color: "var(--muted-foreground)" }}
                 >
-                  ✕ Cancelar
-                </button>
-              )}
-            </div>
+                  {selectedFile ? `📄 ${selectedFile.name}` : "Selecionar arquivo"}
+                </label>
+
+                {selectedFile && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFile(null);
+                      setDueDate("");
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                    className="text-xs cursor-pointer hover:opacity-70"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    ✕ Cancelar
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* ✅ Linha 2: campo de data de vencimento — aparece só após selecionar arquivo */}
             {selectedFile && (
@@ -343,19 +401,14 @@ export default function ExpensesPage() {
                 />
 
                 {/* Botão de importar — só aparece quando arquivo e data estão preenchidos */}
-                {dueDate && (
+                {dueDate && !importing && (
                   <Button
                     type="button"
                     onClick={handleImport}
-                    disabled={importing}
                     className="mt-1 w-fit"
-                    style={{
-                      background: "var(--financial-trust)",
-                      color: "white",
-                      opacity: importing ? 0.7 : 1,
-                    }}
+                    style={{ background: "var(--financial-trust)", color: "white" }}
                   >
-                    {importing ? "Importando..." : "Subir Arquivo"}
+                    Subir Arquivo
                   </Button>
                 )}
               </div>
@@ -472,7 +525,7 @@ export default function ExpensesPage() {
               {/* TIPO DE PAGAMENTO */}
               <div className="space-y-2">
                 <Label htmlFor="paymentType">Tipo de Pagamento</Label>
-                <Select value={paymentType} onValueChange={setPaymentType}>
+                <Select value={paymentType} onValueChange={(v) => setPaymentType(v as PaymentType)}>
                   <SelectTrigger className="select-trigger">
                     <SelectValue placeholder="Selecionar Tipo de Pagamento" />
                   </SelectTrigger>
@@ -562,7 +615,7 @@ export default function ExpensesPage() {
             </p>
           ) : (
             <ul className="space-y-3">
-              {paginatedCosts.map((inc: any) => (
+              {paginatedCosts.map((inc) => (
                 <li
                   key={inc.id}
                   className="p-3 rounded-lg border"
@@ -653,7 +706,7 @@ export default function ExpensesPage() {
         <EditEntityModal
           open={showEdit}
           title="Edit expense"
-          initialData={editingCost}
+          initialData={editingCost as unknown as Record<string, unknown>}
           showDurationInMonths={true}
           showExpenseCategories={true}
           onSave={handleEditCost}
