@@ -19,7 +19,7 @@ import {
 import { Textarea } from "../ui-components/textArea";
 import { DollarSign, Plus, Upload } from "lucide-react";
 import { costService } from "../service/costService";
-import type { Cost } from "../service/costService";
+import type { Cost, PaymentType } from "../service/costService";
 import { statementService } from "../service/statementService";
 import { EditEntityModal } from "./EditEntityModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
@@ -40,7 +40,7 @@ export default function ExpensesPage() {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [costs, setCosts] = useState<Cost[]>([]);
   const [frequency, setFrequency] = useState("");
-  const [paymentType, setPaymentType] = useState("");
+  const [paymentType, setPaymentType] = useState<PaymentType | "">("");
   const [duration, setDuration] = useState<number | null>(null);
   const [showDurationInput, setShowDurationInput] = useState(false);
   const [selectedCost, setSelectedCost] = useState<Cost | null>(null);
@@ -162,8 +162,8 @@ export default function ExpensesPage() {
         startDate: formatDateToISO(date),
         category,
         frequency,
-        durationInMonths: frequency === "One-time" ? 1 : duration,
-        paymentType,
+        durationInMonths: frequency === "One-time" ? 1 : (duration as number),
+        paymentType: paymentType as PaymentType,
         paid: false,
       });
 
@@ -525,7 +525,7 @@ export default function ExpensesPage() {
               {/* TIPO DE PAGAMENTO */}
               <div className="space-y-2">
                 <Label htmlFor="paymentType">Tipo de Pagamento</Label>
-                <Select value={paymentType} onValueChange={setPaymentType}>
+                <Select value={paymentType} onValueChange={(v) => setPaymentType(v as PaymentType)}>
                   <SelectTrigger className="select-trigger">
                     <SelectValue placeholder="Selecionar Tipo de Pagamento" />
                   </SelectTrigger>
@@ -706,7 +706,7 @@ export default function ExpensesPage() {
         <EditEntityModal
           open={showEdit}
           title="Edit expense"
-          initialData={editingCost}
+          initialData={editingCost as unknown as Record<string, unknown>}
           showDurationInMonths={true}
           showExpenseCategories={true}
           onSave={handleEditCost}
