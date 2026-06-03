@@ -83,7 +83,7 @@ export default function InvestmentsPage() {
         startDate,
         endDate,
         type,
-        expectedReturn,
+        expectedReturn: Number(expectedReturn),
       });
 
       await loadInvestment();
@@ -113,7 +113,7 @@ export default function InvestmentsPage() {
     if (!selectedInvestment) return;
 
     try {
-      await investmentService.delete(selectedInvestment.id);
+      await investmentService.delete(Number(selectedInvestment.id));
       await loadInvestment();
       setShowDelete(false);
     } catch (error) {
@@ -126,7 +126,7 @@ export default function InvestmentsPage() {
     if (!editingInvestment) return;
 
     try {
-      await investmentService.update(editingInvestment.id, data);
+      await investmentService.update(Number(editingInvestment.id), data);
       await loadInvestment();
       setShowEdit(false);
       setEditingInvestment(null);
@@ -369,7 +369,7 @@ export default function InvestmentsPage() {
                       </button>
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">{inc.date}</p>
+                  <p className="text-sm text-muted-foreground">{inc.startDate}</p>
                 </li>
               ))}
             </ul>
@@ -382,7 +382,7 @@ export default function InvestmentsPage() {
         <EditEntityModal
           open={showEdit}
           title="Edit investment"
-          initialData={editingInvestment}
+          initialData={editingInvestment as unknown as Record<string, unknown>}
           onSave={handleEditInvestment}
           onCancel={() => setShowEdit(false)}
           showFieldsInvestments
