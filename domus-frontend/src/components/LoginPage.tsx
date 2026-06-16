@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "../ui-components/button";
 import { Input } from "../ui-components/input";
 import { Label } from "../ui-components/label";
-import { authService } from "../service/authService";
+import { useAuth } from "../hooks/useAuth";
 import {
   Card,
   CardContent,
@@ -19,12 +19,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await authService.login({ email, password });
+      await login(email, password);
       navigate("/dashboard");
     } catch {
       alert("Login falhou!");
