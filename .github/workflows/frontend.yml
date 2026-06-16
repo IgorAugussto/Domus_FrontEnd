@@ -37,7 +37,7 @@ jobs:
           cd domus-frontend
           npm run build
         env:
-          VITE_API_URL: https://domusapp.dev.br:8443/api
+          VITE_API_URL: /api
 
   deploy:
     name: Deploy
@@ -64,7 +64,7 @@ jobs:
         cd domus-frontend
         npm run build
       env:
-        VITE_API_URL: https://domusapp.dev.br:8443/api
+        VITE_API_URL: /api
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3

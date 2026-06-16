@@ -14,7 +14,8 @@ api.interceptors.response.use(
     const config = error.config;
 
     if (error.response?.status === 401 || error.response?.status === 403) {
-      if (window.location.pathname !== '/login') {
+      // Não redireciona para verificações silenciosas de sessão (ex: getMe no boot)
+      if (window.location.pathname !== '/login' && !config?._silentAuth) {
         window.location.href = '/login';
       }
       return Promise.reject(error);
