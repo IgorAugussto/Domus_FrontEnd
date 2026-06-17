@@ -35,10 +35,11 @@ export const authService = {
 
   getMe: async (): Promise<AuthResponse | null> => {
     try {
-      const response = await api.get('/auth/me', { _silentAuth: true } as any);
+      const response = await api.get('/auth/me', { _silentAuth: true });
       return response.data;
     } catch {
       return null;
     }
   },
+
 };
