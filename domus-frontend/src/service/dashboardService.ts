@@ -24,13 +24,13 @@ export const dashboardService = {
   // 🔥 NOVO MÉTODO
   getMonthlyProjection: async (): Promise<MonthlyProjection[]> => {
     const response = await api.get("/dashboard/projection/month");
-    return response.data;
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   getYearlyProjection: async (year?: number): Promise<YearlyProjection[]> => {
     const params = year ? { year } : {};
     const response = await api.get("/dashboard/projection/year", { params });
-    return response.data;
+    return Array.isArray(response.data) ? response.data : [];
   },
 
   getMonthlySummary: async (month: string) => {
