@@ -34,10 +34,7 @@ export const statementService = {
     formData.append('file', file);
     formData.append('dueDate', dueDate);
 
-    const response = await api.post(
-      'https://api.domusapp.dev.br:8443/api/statement/import',
-      formData
-    );
+    const response = await api.post('/statement/import', formData);
     return response.data; // { jobId: "uuid" }
   },
 
@@ -49,9 +46,7 @@ export const statementService = {
    * result: preenchido apenas quando status === "DONE"
    */
   getStatus: async (jobId: string): Promise<StatementJobStatus> => {
-    const response = await api.get(
-      `https://api.domusapp.dev.br:8443/api/statement/status/${jobId}`
-    );
+    const response = await api.get(`/statement/status/${jobId}`);
     return response.data;
   },
 };
